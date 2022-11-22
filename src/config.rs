@@ -3,7 +3,9 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use serde_lexpr::{from_str, to_string};
 
-#[derive(Serialize, Deserialize, PartialEq)]
+use crate::gestures::{Direction, Gesture};
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Config {
     device: Option<String>,
     gestures: Vec<Gesture>,
@@ -19,17 +21,11 @@ impl Config {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq)]
-pub struct Gesture {
-    direction: Direction,
-    fingers: u8,
-    action: String,
-}
-
-#[derive(Serialize, Deserialize, PartialEq)]
-pub enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            device: None,
+            gestures: vec![],
+        }
+    }
 }
