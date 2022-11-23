@@ -28,9 +28,7 @@ fn main() {
         ],
     );
     let debug = app.debug || app.verbose > 0;
-    if debug {
-        dbg!(&c);
-    }
+    if_debug!(debug, &c);
     let mut eh = gestures::EventHandler::new(Rc::new(c), debug);
     let mut interface = input::Libinput::new_with_udev(gestures::Interface);
     eh.init(&mut interface)

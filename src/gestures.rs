@@ -19,6 +19,16 @@ use input::{
     DeviceCapability, Libinput, LibinputInterface,
 };
 use serde::{Deserialize, Serialize};
+
+#[macro_export]
+macro_rules! if_debug {
+    ($d:expr, $($item:expr),*) => {
+        if $d {
+            $(dbg!($item);)*
+        }
+    }
+}
+
 /// Direction of gestures
 ///
 /// NW  N  NE
@@ -75,6 +85,7 @@ impl EventHandler {
     }
 
     pub fn init(&mut self, input: &mut Libinput) -> Result<(), String> {
+        if_debug!(self.debug, &self, &input);
         self.init_ctx(input).expect("Could not initialize libinput");
         if self.has_gesture_device(input) {
             Ok(())
@@ -91,18 +102,11 @@ impl EventHandler {
     fn has_gesture_device(&mut self, input: &mut Libinput) -> bool {
         let mut found = false;
         input.dispatch().unwrap();
-        if self.debug {
-            dbg!(&input);
-        };
         for event in input.clone() {
             if let Event::Device(e) = event {
-                if self.debug {
-                    dbg!(&e);
-                }
+                if_debug!(self.debug, &e);
                 found = e.device().has_capability(DeviceCapability::Gesture);
-                if self.debug {
-                    dbg!(found);
-                }
+                if_debug!(self.debug, found);
                 if found {
                     return found;
                 }
@@ -182,9 +186,7 @@ impl EventHandler {
                         }
                     }
                 }
-                if self.debug {
-                    dbg!(GesType::Swipe, &swipe_dir, self.event.fingers);
-                }
+                if_debug!(self.debug, GesType::Swipe, &swipe_dir, self.event.fingers);
                 for i in &self.config.clone().gestures {
                     if i.gesture_type == GesType::Swipe
                         && i.direction == swipe_dir
