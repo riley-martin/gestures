@@ -2,19 +2,49 @@ mod config;
 mod gestures;
 mod utils;
 
-use std::env;
+use std::{path::PathBuf, rc::Rc};
+
+use clap::{Parser, Subcommand};
+use serde_lexpr::to_string;
 
 fn main() {
-    if args.debug || args.raw || args.list {
-        args.verbose = true;
-    }
+    let app = App::parse();
 
-    if args.verbose {
-        let xsession = env::var("XDG_SESSION_DESKTOP").unwrap_or_else(|_| {
-            env::var("DESKTOP_SESSION").unwrap_or_else(|_| "default".to_string())
-        });
-        let xtype = env::var("XDG_SESSION_TYPE").unwrap_or_else(|_| "unknown".to_string());
-        let xstr = format!("session {}+{}", xsession, xtype);
-        println!("gestures: {} on {}", xstr, env::consts::OS);
+    let c = config::Config::new(
+        None,
+        vec![
+            gestures::Gesture {
+                gesture_type: gestures::GesType::Swipe,
+                direction: gestures::Direction::N,
+                fingers: 3,
+                action: "rofi -show drun".to_string(),
+            },
+            gestures::Gesture {
+                gesture_type: gestures::GesType::Swipe,
+                direction: gestures::Direction::S,
+                fingers: 3,
+                action: "rofi -show run".to_string(),
+            },
+        ],
+    );
+    let debug = app.debug || app.verbose > 0;
+    if debug {
+        dbg!(&c);
     }
+    let mut eh = gestures::EventHandler::new(Rc::new(c), debug);
+    let mut interface = input::Libinput::new_with_udev(gestures::Interface);
+    eh.init(&mut interface)
+        .expect("could not initialize libinput");
+    eh.main_loop(&mut interface);
+}
+
+#[derive(Parser, Debug)]
+#[command(author, version, about)]
+struct App {
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
+    #[arg(short, long)]
+    debug: bool,
+    #[arg(short, long, value_name = "FILE")]
+    conf: Option<PathBuf>,
 }

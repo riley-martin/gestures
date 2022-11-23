@@ -7,8 +7,8 @@ use crate::gestures::{Direction, Gesture};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Config {
-    device: Option<String>,
-    gestures: Vec<Gesture>,
+    pub device: Option<String>,
+    pub gestures: Vec<Gesture>,
 }
 
 impl Config {
