@@ -5,28 +5,11 @@ mod utils;
 use std::{path::PathBuf, rc::Rc};
 
 use clap::{Parser, Subcommand};
-use serde_lexpr::to_string;
 
 fn main() {
     let app = App::parse();
 
-    let c = config::Config::new(
-        None,
-        vec![
-            gestures::Gesture {
-                gesture_type: gestures::GesType::Swipe,
-                direction: gestures::Direction::N,
-                fingers: 4,
-                action: "killall rofi".to_string(),
-            },
-            gestures::Gesture {
-                gesture_type: gestures::GesType::Swipe,
-                direction: gestures::Direction::S,
-                fingers: 4,
-                action: "/home/riley/.config/rofi/scripts/launcher_custom".to_string(),
-            },
-        ],
-    );
+    let c = config::Config::read_default_config().expect("failed to read config");
     let debug = app.debug || app.verbose > 0;
     if_debug!(debug, &c);
     let mut eh = gestures::EventHandler::new(Rc::new(c), debug);

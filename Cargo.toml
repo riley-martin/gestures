@@ -12,3 +12,4 @@ serde = { version = "1.0", features = ["derive"] }
 input = "0.7"
 libc = "0.2"
 nix = {version = "0.25", features = ["poll"]}
+anyhow = "1.0.66"
