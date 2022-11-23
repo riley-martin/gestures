@@ -220,10 +220,11 @@ impl LibinputInterface for Interface {
 }
 
 pub fn exec_command_from_string(s: &str) {
-    let args = s.split(" ");
+    // let args = s.split(' ');
+    // dbg!(&args);
     Command::new("sh")
         .arg("-c")
-        .args(args)
+        .arg(s)
         .spawn()
         .expect("Could not execute external command");
 }

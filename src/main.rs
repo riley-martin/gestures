@@ -16,14 +16,14 @@ fn main() {
             gestures::Gesture {
                 gesture_type: gestures::GesType::Swipe,
                 direction: gestures::Direction::N,
-                fingers: 3,
-                action: "rofi -show drun".to_string(),
+                fingers: 4,
+                action: "killall rofi".to_string(),
             },
             gestures::Gesture {
                 gesture_type: gestures::GesType::Swipe,
                 direction: gestures::Direction::S,
-                fingers: 3,
-                action: "rofi -show run".to_string(),
+                fingers: 4,
+                action: "/home/riley/.config/rofi/scripts/launcher_custom".to_string(),
             },
         ],
     );
