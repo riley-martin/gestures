@@ -19,6 +19,8 @@ as well.
 See [config.md](./config.md) for configuration instructions.
 
 ## Installation
+### With Cargo
+If you have cargo installed, simply use `cargo install gestures`
 ### Manual installation
 - Clone the repo
   - `git clone https://github.com/riley-martin/gestures`
