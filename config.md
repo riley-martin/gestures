@@ -5,7 +5,7 @@ are the configuration locations. They are read in that order, stopping whenever 
 encountered.
 ## Format
 The configuration format is based on s-expressions.
-```
+```lisp
 (
   ;; device specifies which touchpad device to use. If left empty, selection is automatic.
   ;; Currently HAS NO EFFECT
