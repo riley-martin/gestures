@@ -9,9 +9,14 @@ of `libinput debug-events`.
 as well.
 - [x] Handle libinput events
   - [x] Swipe events; vertical, horizontal and diagonal
-  - [ ] Pinch events
+  - [x] Pinch events
   - [ ] Hold events
-- [ ] Config file, currently configuration is compiled in; this is top priority
+  - [ ] Rotate events
+  - [ ] Continuous and one-shot events (currently only continuous is supported)
+- [x] Config file
+
+## Configuration
+See [config.md](./config.md) for configuration instructions.
 
 ## Installation
 ### Manual installation
