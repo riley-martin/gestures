@@ -12,7 +12,8 @@ use crate::config::Config;
 use input::{
     event::{
         gesture::{
-            GestureEventCoordinates, GestureEventTrait, GestureHoldEvent, GestureSwipeEvent,
+            GestureEventCoordinates, GestureEventTrait, GestureHoldEvent, GesturePinchEvent,
+            GesturePinchEventTrait, GestureSwipeEvent,
         },
         Event, EventTrait, GestureEvent,
     },
@@ -49,18 +50,50 @@ pub enum Direction {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum GesType {
-    Swipe,
-    Hold,
-    Pinch,
+#[serde(rename_all = "snake_case")]
+pub enum InOut {
+    In,
+    Out,
+    None,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Gesture {
+#[serde(rename_all = "snake_case")]
+pub enum Gesture {
+    Swipe(Swipe),
+    Pinch(Pinch),
+    Hold(Hold),
+    Rotate(Rotate),
+    None,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Swipe {
     pub direction: Direction,
     pub fingers: i32,
     pub action: String,
-    pub gesture_type: GesType,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Pinch {
+    pub scale: f64,
+    pub fingers: i32,
+    pub direction: InOut,
+    pub action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Hold {
+    pub fingers: i32,
+    pub action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Rotate {
+    pub scale: f64,
+    pub fingers: i32,
+    pub delta_angle: f64,
+    pub action: String,
 }
 
 #[derive(Debug)]
@@ -74,12 +107,7 @@ impl EventHandler {
     pub fn new(config: Rc<Config>, debug: bool) -> Self {
         Self {
             config,
-            event: Gesture {
-                direction: Direction::C,
-                fingers: 0,
-                action: "".to_string(),
-                gesture_type: GesType::Swipe,
-            },
+            event: Gesture::None,
             debug,
         }
     }
@@ -130,9 +158,9 @@ impl EventHandler {
         for event in input.clone() {
             if let Event::Gesture(e) = event {
                 match e {
-                    GestureEvent::Pinch(_) => (),
+                    GestureEvent::Pinch(e) => self.handle_pinch_event(e),
                     GestureEvent::Swipe(e) => self.handle_swipe_event(e),
-                    GestureEvent::Hold(_) => (),
+                    GestureEvent::Hold(e) => self.handle_hold_event(e),
                     _ => (),
                 }
             }
@@ -140,10 +168,66 @@ impl EventHandler {
         }
     }
 
+    fn handle_hold_event(&mut self, event: GestureHoldEvent) {
+        match event {
+            GestureHoldEvent::Begin(e) => {
+                self.event = Gesture::Hold(Hold {
+                    fingers: e.finger_count(),
+                    action: "".to_string(),
+                })
+            }
+            GestureHoldEvent::End(e) => {
+                if let Gesture::Hold(s) = &self.event {
+                    for i in &self.config.clone().gestures {
+                        if let Gesture::Hold(j) = i {
+                            if j.fingers == s.fingers {
+                                exec_command_from_string(&j.action);
+                            }
+                        }
+                    }
+                }
+            }
+            _ => (),
+        }
+    }
+
+    fn handle_pinch_event(&mut self, event: GesturePinchEvent) {
+        match event {
+            GesturePinchEvent::Begin(e) => {
+                self.event = Gesture::Pinch(Pinch {
+                    fingers: e.finger_count(),
+                    scale: 0.0,
+                    direction: InOut::None,
+                    action: "".to_string(),
+                })
+            }
+            // TODO: add different gesture types
+            GesturePinchEvent::Update(e) => {
+                let scale = e.scale();
+                if let Gesture::Pinch(s) = &self.event {
+                    let dir = if scale > 1.0 { InOut::Out } else { InOut::In };
+                    for i in &self.config.clone().gestures {
+                        if let Gesture::Pinch(j) = i {
+                            if j.direction == dir && j.fingers == s.fingers {
+                                exec_command_from_string(&j.action);
+                            }
+                        }
+                    }
+                }
+            }
+            GesturePinchEvent::End(e) => (),
+            _ => (),
+        }
+    }
+
     fn handle_swipe_event(&mut self, event: GestureSwipeEvent) {
         match event {
             GestureSwipeEvent::Begin(e) => {
-                self.event.fingers = e.finger_count();
+                self.event = Gesture::Swipe(Swipe {
+                    direction: Direction::C,
+                    fingers: e.finger_count(),
+                    action: "".to_string(),
+                });
             }
             GestureSwipeEvent::Update(e) => {
                 let (x, y) = (e.dx(), e.dy());
@@ -186,13 +270,14 @@ impl EventHandler {
                         }
                     }
                 }
-                if_debug!(self.debug, GesType::Swipe, &swipe_dir, self.event.fingers);
-                for i in &self.config.clone().gestures {
-                    if i.gesture_type == GesType::Swipe
-                        && i.direction == swipe_dir
-                        && i.fingers == self.event.fingers
-                    {
-                        exec_command_from_string(&i.action)
+                if let Gesture::Swipe(s) = &self.event {
+                    if_debug!(self.debug, s);
+                    for i in &self.config.clone().gestures {
+                        if let Gesture::Swipe(j) = i {
+                            if j.fingers == s.fingers && j.direction == swipe_dir {
+                                exec_command_from_string(&j.action);
+                            }
+                        }
                     }
                 }
             }
