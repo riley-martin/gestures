@@ -10,7 +10,7 @@ as well.
 - [x] Handle libinput events
   - [x] Swipe events; vertical, horizontal and diagonal
   - [x] Pinch events
-  - [ ] Hold events
+  - [x] Hold events
   - [ ] Rotate events
   - [ ] Continuous and one-shot events (currently only continuous is supported)
 - [x] Config file
