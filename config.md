@@ -34,6 +34,11 @@ The configuration format is based on s-expressions.
       ;; same as above
       (action . "killall rofi")
     )
+    ;; hold action
+    (hold
+      (fingers . 4)
+      (action . "rofi -show drun")
+    )
   )
 )
   

@@ -160,11 +160,34 @@ impl EventHandler {
                 match e {
                     GestureEvent::Pinch(e) => self.handle_pinch_event(e),
                     GestureEvent::Swipe(e) => self.handle_swipe_event(e),
-                    GestureEvent::Hold(_) => (),
+                    GestureEvent::Hold(e) => self.handle_hold_event(e),
                     _ => (),
                 }
             }
             input.dispatch().unwrap();
+        }
+    }
+
+    fn handle_hold_event(&mut self, event: GestureHoldEvent) {
+        match event {
+            GestureHoldEvent::Begin(e) => {
+                self.event = Gesture::Hold(Hold {
+                    fingers: e.finger_count(),
+                    action: "".to_string(),
+                })
+            }
+            GestureHoldEvent::End(e) => {
+                if let Gesture::Hold(s) = &self.event {
+                    for i in &self.config.clone().gestures {
+                        if let Gesture::Hold(j) = i {
+                            if j.fingers == s.fingers {
+                                exec_command_from_string(&j.action);
+                            }
+                        }
+                    }
+                }
+            }
+            _ => (),
         }
     }
 
