@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 description = "Libinput based touchpad gestures program"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+repository = "https://github.com/riley-martin/gestures"
+keywords = ["touchpad", "gestures", "libinput", "multitouch", "linux"]
 
 [dependencies]
 clap = { version = "4.0.26", features = ["derive"] }
