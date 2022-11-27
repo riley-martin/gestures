@@ -1,0 +1,122 @@
+{%- import 'macros/head.html' as macros_head %}
+{%- import "macros/social.html" as social_macros %}
+{%- import "macros/page.html" as page_macros %}
+{%- import "macros/macros.html" as macros %}
+<!DOCTYPE html>
+<html lang="{{ config.extra.language_code | default(value='en-US') }}">
+<head>
+  {{- macros_head::theme(config=config) }}
+  {{- macros_head::stylesheets(config=config) }}
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  {{- macros_head::stylesheets_preload(config=config) }}
+  {{- macros_head::js(config=config) }}
+  <meta name="base" content="{{ config.base_url | safe }}" />
+  {{- macros_head::feed(config=config) }}
+  {%- block seo %}
+    {%- if config.extra.title_separator %}
+      {%- set title_separator = " " ~ config.extra.title_separator ~ " " -%}
+    {%- else %}
+      {%- set title_separator = " | " -%}
+    {%- endif %}
+  {%- endblock seo %}
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  {{- macros_head::security(config=config) }}
+  {{- macros_head::favicons(config=config) }}
+  {%- if config.build_search_index %}
+  <noscript><link rel="stylesheet" href="{{ get_url(path='nojs.css', trailing_slash=false) | safe }}" /></noscript>
+  {%- endif %}
+</head>
+<body>
+{%- block header %}
+  <header>
+    <nav>
+      <div>
+        {%- if config.extra.logo -%}
+        <h1><a href="{{ config.base_url | safe }}/{%- if config.extra.uglyurls %}index.html{%- endif %}">
+        {%- if config.extra.logo.file -%}
+        <img src="{{ config.base_url | safe }}/{{ config.extra.logo.file | safe }}"{%- if config.extra.logo.alt %} alt="{{ config.extra.logo.alt | safe }}"{%- endif %}{%- if config.extra.logo.width %} width="{{ config.extra.logo.width | safe }}"{%- endif %}{%- if config.extra.logo.height %} height="{{ config.extra.logo.height | safe }}"{%- endif %} />
+        {%- endif -%}
+        {%- if config.extra.logo.text -%}{{ config.extra.logo.text | safe }}{%- endif -%}
+        </a></h1>
+        {%- elif config.extra.textlogo -%}
+        <h1><a href="{{ config.base_url | safe }}/{%- if config.extra.uglyurls %}index.html{%- endif %}">{{ config.extra.textlogo | safe }}</a></h1>
+        {%- elif config.title -%}
+        <h1><a href="{{ config.base_url | safe }}/{%- if config.extra.uglyurls %}index.html{%- endif %}">{{ config.title | safe }}</a></h1>
+        {%- endif -%}
+      </div>
+      <div>
+        <ul>
+          {%- for i in config.extra.menu -%}
+          <li> <h2><a href="{{ get_url(path=i.url, trailing_slash=i.slash) }}{%- if i.slash and config.extra.uglyurls %}index.html{%- endif %}"{% if i.blank %} target="_blank"{% endif %}>{{ i.name | safe }}</a></h2> </li>
+          {%- endfor -%}
+          {%- if config.extra.js_theme -%}
+          <li class="js">{%- if config.extra.icon_adjust -%}<i type="reset" id="mode" class="{{ config.extra.icon_adjust }}"></i>{%- else -%}<i type="reset" id="mode" class="mode">&#9728;</i>{%- endif -%}</li>
+          {%- endif -%}
+        </ul>
+      </div>
+      {%- if config.build_search_index %}
+      <div>
+        <form autocomplete=off class="js" name="goSearch" id="searchbox">
+          <div class="searchd">
+            <input id="searchinput" type="text" placeholder="Search" title="Search"{% if config.extra.search_library %}{% if config.extra.search_library == "stork" %} data-stork="stork" {% endif %}{% endif %} />
+            <button type="submit" title="Search">{%- if config.extra.icon_search -%}<i class="{{ config.extra.icon_search }}"></i>{%- else -%}<span class="si">&#8981;</span>{%- endif -%}</button>
+          </div>
+          <div><div id="suggestions"{% if config.extra.search_library %}{% if config.extra.search_library == "stork" %} data-stork="stork-output" {% endif %}{% endif %}></div></div>
+        </form>
+      </div>
+      {%- endif %}
+    </nav>
+    {%- if config.extra.sitedesc %}
+    {%- if config.description %}
+    <div>{{ config.description }}</div>
+    {%- endif %}
+    {%- endif %}
+    {%- if config.extra.headhr %}
+    <hr />
+    {%- endif %}
+  </header>
+{%- endblock header %}
+  <main>
+  {%- block content %}
+  {%- endblock content %}
+  </main>
+{%- block footer %}
+  <footer>
+    {%- if config.extra.foothr %}
+    <hr />
+    {%- endif %}
+    <div class="c">
+      {{- social_macros::social_links(social_config=config.extra.social, config=config) }}
+
+      {#- Copyright START #}
+      {%- set copyright_start_year=config.extra.copyright_start_year | default(value="") %}
+      {%- if copyright_start_year %}{%- set copyright_start_year=copyright_start_year ~ "-" %}{%- endif %}
+      {%- set copyright_end_year=config.extra.copyright_end_year | default(value=now() | date(format="%Y")) %}
+      <p{%- if config.extra.footer_size %} class="{{ config.extra.footer_size }}"{% endif %}>Copyright &copy; {{ copyright_start_year ~ copyright_end_year }} {{ config.title }}</p>
+      {#- Copyright END #}
+      <nav>
+        <ul>
+          {%- for i in config.extra.menu_footer -%}
+          <li{%- if config.extra.footer_size %} class="{{ config.extra.footer_size }}"{% endif %}> <a href="{{ get_url(path=i.url, trailing_slash=i.slash) }}{%- if i.slash and config.extra.uglyurls %}index.html{%- endif %}"{% if i.blank %} target="_blank"{% endif %}> {{ i.name | safe }} </a> </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+      {%- if config.extra.footer_credit | default(value=true) %}
+      {%- if config.extra.footer_credit_override %}
+      {{ config.extra.footer_credit_override | safe }}
+      {%- else %}
+      <p{%- if config.extra.footer_size %} class="{{ config.extra.footer_size }}"{% endif %}>Powered by <a href="https://www.getzola.org/" target="_blank">Zola</a> and <a href="https://github.com/jieiku/abridge/" target="_blank">Abridge</a></p>
+      {%- endif %}
+      {%- endif %}
+    </div>
+  </footer>
+{%- endblock footer %}
+{%- block gotop %}
+{%- endblock gotop %}
+</body>
+</html>
