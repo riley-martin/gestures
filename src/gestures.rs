@@ -12,8 +12,8 @@ use crate::config::Config;
 use input::{
     event::{
         gesture::{
-            GestureEventCoordinates, GestureEventTrait, GestureHoldEvent, GesturePinchEvent,
-            GesturePinchEventTrait, GestureSwipeEvent,
+            GestureEndEvent, GestureEventCoordinates, GestureEventTrait, GestureHoldEvent,
+            GesturePinchEvent, GesturePinchEventTrait, GestureSwipeEvent,
         },
         Event, EventTrait, GestureEvent,
     },
@@ -59,6 +59,13 @@ pub enum InOut {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+pub enum Repeat {
+    Oneshot,
+    Continuous,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Gesture {
     Swipe(Swipe),
     Pinch(Pinch),
@@ -71,6 +78,7 @@ pub enum Gesture {
 pub struct Swipe {
     pub direction: Direction,
     pub fingers: i32,
+    pub repeat: Repeat,
     pub action: String,
 }
 
@@ -79,6 +87,7 @@ pub struct Pinch {
     pub scale: f64,
     pub fingers: i32,
     pub direction: InOut,
+    pub repeat: Repeat,
     pub action: String,
 }
 
@@ -93,6 +102,7 @@ pub struct Rotate {
     pub scale: f64,
     pub fingers: i32,
     pub delta_angle: f64,
+    pub repeat: Repeat,
     pub action: String,
 }
 
@@ -198,6 +208,7 @@ impl EventHandler {
                     fingers: e.finger_count(),
                     scale: 0.0,
                     direction: InOut::None,
+                    repeat: Repeat::Oneshot,
                     action: "".to_string(),
                 })
             }
@@ -226,6 +237,7 @@ impl EventHandler {
                 self.event = Gesture::Swipe(Swipe {
                     direction: Direction::C,
                     fingers: e.finger_count(),
+                    repeat: Repeat::Oneshot,
                     action: "".to_string(),
                 });
             }
@@ -274,14 +286,35 @@ impl EventHandler {
                     if_debug!(self.debug, s);
                     for i in &self.config.clone().gestures {
                         if let Gesture::Swipe(j) = i {
-                            if j.fingers == s.fingers && j.direction == swipe_dir {
+                            if j.fingers == s.fingers
+                                && j.direction == swipe_dir
+                                && j.repeat == Repeat::Continuous
+                            {
                                 exec_command_from_string(&j.action);
+                            }
+                        }
+                    }
+                    self.event = Gesture::Swipe(Swipe {
+                        direction: swipe_dir,
+                        fingers: s.fingers,
+                        repeat: Repeat::Oneshot,
+                        action: "".to_string(),
+                    })
+                }
+            }
+            GestureSwipeEvent::End(e) => {
+                if let Gesture::Swipe(s) = &self.event {
+                    if !e.cancelled() {
+                        for i in &self.config.clone().gestures {
+                            if let Gesture::Swipe(j) = i {
+                                if j.fingers == s.fingers && j.direction == s.direction {
+                                    exec_command_from_string(&j.action);
+                                }
                             }
                         }
                     }
                 }
             }
-            GestureSwipeEvent::End(_) => (),
             _ => (),
         }
     }
