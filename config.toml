@@ -16,7 +16,7 @@ taxonomies = [
     {name = "tags", feed = true},
 ]
 
-#theme = "abridge"
+theme = "abridge"
 
 build_search_index = true
 [search]                # Options specific to elasticlunr search.
