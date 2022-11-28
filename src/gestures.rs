@@ -219,14 +219,36 @@ impl EventHandler {
                     let dir = if scale > 1.0 { InOut::Out } else { InOut::In };
                     for i in &self.config.clone().gestures {
                         if let Gesture::Pinch(j) = i {
-                            if j.direction == dir && j.fingers == s.fingers {
+                            if j.direction == dir
+                                && j.fingers == s.fingers
+                                && j.repeat == Repeat::Continuous
+                            {
+                                if_debug!(self.debug, "continuous pinch gesture");
+                                exec_command_from_string(&j.action);
+                            }
+                        }
+                    }
+                    self.event = Gesture::Pinch(Pinch {
+                        fingers: s.fingers,
+                        scale: 0.0,
+                        direction: dir,
+                        repeat: Repeat::Oneshot,
+                        action: "".to_string(),
+                    })
+                }
+            }
+            GesturePinchEvent::End(e) => {
+                if let Gesture::Pinch(s) = &self.event {
+                    for i in &self.config.clone().gestures {
+                        if let Gesture::Pinch(j) = i {
+                            if j.direction == s.direction && j.fingers == s.fingers {
+                                if_debug!(self.debug, "oneshot pinch gesture");
                                 exec_command_from_string(&j.action);
                             }
                         }
                     }
                 }
             }
-            GesturePinchEvent::End(e) => (),
             _ => (),
         }
     }
