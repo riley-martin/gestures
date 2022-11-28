@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <script src="https://riley-martin.github.io/gestures/theme.min.js" integrity="sha384-IpIaa84kOKgkF5EJ0fD/kBe2wtIIsIB60ANGmuJxeA0dz5bSRfwBwp2/QybtQpU2"></script>
+  <link rel="stylesheet" href="https://riley-martin.github.io/gestures/abridge-blueshade-switcher.css?h=c500b9e630909ec298406584f7b362ebaf1b5470a16adcaa36aaa329a63c8498" />
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <script defer src="https://riley-martin.github.io/gestures/abridge-bundle.min.js?h=f0e7958f46d06221e99d6d7f24150858523908ca5ca41865ddfba64bc9466f6a" integrity="sha384-nUzn1rJBMPtXHTJcP76DAl7M3pn9hUVGWBMq6iYleX0NZ/ec+/xQ6nl8iXbBLfCs"></script>
+  <meta name="base" content="https://riley-martin.github.io/gestures" />
+  <link rel="alternate" type="application/atom+xml" title="Atom/RSS Feed" href="https://riley-martin.github.io/gestures/atom.xml" />
+  <meta name="robots" content="index, follow" />
+  <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <title>Configuration | Gestures</title>
+  <meta name="author" content="Riley Martin" />
+  <meta name="copyright" content="Gestures" />
+  <meta name="description" content="Gestures is a tool for executing commands based on touchpad gestures" />
+  <link rel="canonical" href="https://riley-martin.github.io/gestures/config/" />
+  <meta name="keywords" content="Touchpad, Gestures, Multitouch, Linux, Daemon" />
+  <meta property="og:url" content="https://riley-martin.github.io/gestures/config/" />
+  <meta name="twitter:url" content="https://riley-martin.github.io/gestures/config/" />
+  <meta property="og:description" content="Gestures is a tool for executing commands based on touchpad gestures" />
+  <meta name="twitter:description" content="Gestures is a tool for executing commands based on touchpad gestures" />
+  <meta property="og:title" content="Configuration | Gestures" />
+  <meta name="twitter:title" content="Configuration | Gestures" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://riley-martin.github.io/gestures/banner.png" />
+  <meta property="og:image" content="https://riley-martin.github.io/gestures/banner.png" />
+  <meta property="og:site_name" content="Gestures" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:updated_time" content="2021-07-04T07:07:00-07:00" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#333333" />
+  <meta name="msapplication-TileColor" content="#333333" />
+  <link rel="manifest" href="https://riley-martin.github.io/gestures/site.webmanifest" />
+  <link rel="mask-icon" href="https://riley-martin.github.io/gestures/safari-pinned-tab.svg" color="#ff9900" />
+  <link rel="apple-touch-icon" sizes="180x180" href="https://riley-martin.github.io/gestures/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="https://riley-martin.github.io/gestures/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="https://riley-martin.github.io/gestures/favicon-16x16.png" />
+  <noscript><link rel="stylesheet" href="https://riley-martin.github.io/gestures/nojs.css" /></noscript>
+</head>
+<body>
+  <header>
+    <nav>
+      <div><h1><a href="https://riley-martin.github.io/gestures/"><font color="#f90">G</font>estures</a></h1></div>
+      <div>
+        <ul><li> <h2><a href="https://riley-martin.github.io/gestures/about/">About</a></h2> </li><li> <h2><a href="https://riley-martin.github.io/gestures/examples/">Examples</a></h2> </li><li> <h2><a href="https://riley-martin.github.io/gestures/config/">Configuration</a></h2> </li><li class="js"><i type="reset" id="mode" class="svgs adjust"></i></li></ul>
+      </div>
+      <div>
+        <form autocomplete=off class="js" name="goSearch" id="searchbox">
+          <div class="searchd">
+            <input id="searchinput" type="text" placeholder="Search" title="Search" />
+            <button type="submit" title="Search"><i class="svgs search"></i></button>
+          </div>
+          <div><div id="suggestions"></div></div>
+        </form>
+      </div>
+    </nav>
+  </header>
+  <main>
+    <div>
+      <p>Gestures uses a config format based on s-expressions. Here is a commented example.</p>
+<pre data-lang="lisp" class="language-lisp z-code"><code class="language-lisp" data-lang="lisp"><span class="z-source z-lisp">  <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>
+    <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> This is not implemented and is optional. If not present, the device will be automatically selected
+</span>    <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>device <span class="z-string z-quoted z-double z-lisp"><span class="z-punctuation z-definition z-string z-begin z-lisp">&quot;</span>/path/to/touchpad<span class="z-punctuation z-definition z-string z-end z-lisp">&quot;</span></span><span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+    
+    <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> This section is a list of gestures to intercept
+</span>    <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>
+      <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> swipe gesture
+</span>      <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>swipe
+        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> direction: any of the eight points on a compass. Vertical and horizontal as well as diagonal
+</span>        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> gestures are supported
+</span>        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>direction . N<span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> number of fingers to use. Basically can be 3..=4 because 2 fingers is a scroll and I
+</span>        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> think libinput ignores more than 4
+</span>        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>fingers . <span class="z-constant z-numeric z-lisp">4</span><span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> the action is a command executed with `sh -c`
+</span>        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>action . <span class="z-string z-quoted z-double z-lisp"><span class="z-punctuation z-definition z-string z-begin z-lisp">&quot;</span>rofi -show drun<span class="z-punctuation z-definition z-string z-end z-lisp">&quot;</span></span><span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> repeat can be continuous or oneshot. Oneshot executes the action once after the entire gesture,
+</span>        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> continuous executes it every time `GestureSwipeEvent::Update` is recieved from libinput
+</span>        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span><span class="z-keyword z-control z-lisp">repeat</span> . oneshot<span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+      <span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+      <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> pinch gesture
+</span>      <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>pinch
+        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> direction can be in or out
+</span>        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>direction . out<span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> same as above, although I think a 2 finger pinch should work here
+</span>        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>fingers . <span class="z-constant z-numeric z-lisp">4</span><span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> this is currently ignored
+</span>        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>scale . <span class="z-constant z-numeric z-lisp">0.0</span><span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> same as above
+</span>        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>action . <span class="z-string z-quoted z-double z-lisp"><span class="z-punctuation z-definition z-string z-begin z-lisp">&quot;</span>rofi -show drun<span class="z-punctuation z-definition z-string z-end z-lisp">&quot;</span></span><span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+        <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> same as above
+</span>        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span><span class="z-keyword z-control z-lisp">repeat</span> . oneshot<span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+      <span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+      <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> hold gesture
+</span>      <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> shold be self-explanatory, one difference is that only oneshot hold gestures are supported,
+</span>      <span class="z-comment z-line z-semicolon z-lisp"><span class="z-punctuation z-definition z-comment z-lisp">;</span> because libinput does not send a `GestureHoldEvent::Update`, only begin and end.
+</span>      <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>hold
+        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>fingers . <span class="z-constant z-numeric z-lisp">4</span><span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+        <span class="z-meta z-group z-lisp"><span class="z-punctuation z-definition z-group z-begin z-lisp">(</span>action . <span class="z-string z-quoted z-double z-lisp"><span class="z-punctuation z-definition z-string z-begin z-lisp">&quot;</span>rofi -show drun<span class="z-punctuation z-definition z-string z-end z-lisp">&quot;</span></span><span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+      <span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+    <span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+  <span class="z-punctuation z-definition z-group z-end z-lisp">)</span></span>
+</span></code></pre>
+
+    </div>
+  </main>
+  <footer>
+    <hr />
+    <div class="c">
+      <nav>
+        <ul><li><a href="https://riley-martin.github.io/gestures/atom.xml" target="_blank" title="Atom/RSS Feed"><i type="Button" class="svg rss" title="Atom/RSS Feed"></i></a></li><li><a href="https://github.com/riley-martin/" target="_blank" title="Github"><i type="Button" class="svg github" title="Github"></i></a></li><li><a href="https://stackoverflow.com/users/riley-martin/" target="_blank" title="Stack"><i type="Button" class="svg stack" title="Stack"></i></a></li></ul>
+      </nav>
+      <p class="s90">Copyright &copy; 2022 Gestures</p>
+      <nav>
+        <ul><li class="s90"> <a href="https://riley-martin.github.io/gestures/about/"> About </a> </li><li class="s90"> <a href="https://riley-martin.github.io/gestures/privacy/"> Privacy </a> </li><li class="s90"> <a href="https://riley-martin.github.io/gestures/sitemap.xml" target="_blank"> Sitemap </a> </li></ul>
+      </nav>
+      <p class="s90">Powered by <a href="https://www.getzola.org/" target="_blank">Zola</a> and <a href="https://github.com/jieiku/abridge/" target="_blank">Abridge</a></p>
+    </div>
+  </footer>
+</body>
+</html>

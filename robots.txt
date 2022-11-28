@@ -1,0 +1,4 @@
+Sitemap: https://riley-martin.github.io/gestures/sitemap.xml
+User-Agent: *
+Allow: /
+Host: https://riley-martin.github.io/gestures
