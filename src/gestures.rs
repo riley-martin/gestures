@@ -25,7 +25,8 @@ use serde::{Deserialize, Serialize};
 macro_rules! if_debug {
     ($d:expr, $($item:expr),*) => {
         if $d {
-            $(dbg!($item);)*
+            dbg!($($item,)*);
+            eprintln!();
         }
     }
 }
@@ -216,6 +217,7 @@ impl EventHandler {
                 let scale = e.scale();
                 if let Gesture::Pinch(s) = &self.event {
                     let dir = if scale > 1.0 { InOut::Out } else { InOut::In };
+                    if_debug!(self.debug, &scale, &dir, &s.fingers);
                     for i in &self.config.clone().gestures {
                         if let Gesture::Pinch(j) = i {
                             if j.direction == dir
@@ -314,7 +316,7 @@ impl EventHandler {
                 let swipe_dir = self.direction(x, y);
 
                 if let Gesture::Swipe(s) = &self.event {
-                    if_debug!(self.debug, s);
+                    if_debug!(self.debug, &swipe_dir, &s.fingers);
                     for i in &self.config.clone().gestures {
                         if let Gesture::Swipe(j) = i {
                             if j.fingers == s.fingers
