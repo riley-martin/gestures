@@ -212,7 +212,6 @@ impl EventHandler {
                     action: "".to_string(),
                 })
             }
-            // TODO: add different gesture types
             GesturePinchEvent::Update(e) => {
                 let scale = e.scale();
                 if let Gesture::Pinch(s) = &self.event {
@@ -253,6 +252,53 @@ impl EventHandler {
         }
     }
 
+    fn direction(&self, x: f64, y: f64) -> Direction {
+        let oblique_ratio = 0.414;
+        if x.abs() > y.abs() {
+            let sd = if x < 0.0 { Direction::W } else { Direction::E };
+            if y.abs() / x.abs() > oblique_ratio {
+                if sd == Direction::W {
+                    if y < 0.0 {
+                        Direction::NW
+                    } else {
+                        Direction::SW
+                    }
+                } else if sd == Direction::E {
+                    if y < 0.0 {
+                        Direction::NE
+                    } else {
+                        Direction::SE
+                    }
+                } else {
+                    Direction::C
+                }
+            } else {
+                sd
+            }
+        } else {
+            let sd = if y < 0.0 { Direction::N } else { Direction::S };
+            if x.abs() / y.abs() > oblique_ratio {
+                if sd == Direction::N {
+                    if x < 0.0 {
+                        Direction::NW
+                    } else {
+                        Direction::NE
+                    }
+                } else if sd == Direction::S {
+                    if x < 0.0 {
+                        Direction::SW
+                    } else {
+                        Direction::SE
+                    }
+                } else {
+                    Direction::C
+                }
+            } else {
+                sd
+            }
+        }
+    }
+
     fn handle_swipe_event(&mut self, event: GestureSwipeEvent) {
         match event {
             GestureSwipeEvent::Begin(e) => {
@@ -265,45 +311,8 @@ impl EventHandler {
             }
             GestureSwipeEvent::Update(e) => {
                 let (x, y) = (e.dx(), e.dy());
-                let oblique_ratio = 0.414;
-                let mut swipe_dir = Direction::C;
+                let swipe_dir = self.direction(x, y);
 
-                // Needs refactored
-                if x.abs() > y.abs() {
-                    swipe_dir = if x < 0.0 { Direction::W } else { Direction::E };
-                    if y.abs() / x.abs() > oblique_ratio {
-                        if swipe_dir == Direction::W {
-                            swipe_dir = if y < 0.0 {
-                                Direction::NW
-                            } else {
-                                Direction::SW
-                            };
-                        } else if swipe_dir == Direction::E {
-                            swipe_dir = if y < 0.0 {
-                                Direction::NE
-                            } else {
-                                Direction::SE
-                            };
-                        }
-                    }
-                } else {
-                    swipe_dir = if y < 0.0 { Direction::N } else { Direction::S };
-                    if x.abs() / y.abs() > oblique_ratio {
-                        if swipe_dir == Direction::N {
-                            swipe_dir = if x < 0.0 {
-                                Direction::NW
-                            } else {
-                                Direction::NE
-                            };
-                        } else if swipe_dir == Direction::S {
-                            swipe_dir = if x < 0.0 {
-                                Direction::SW
-                            } else {
-                                Direction::SE
-                            };
-                        }
-                    }
-                }
                 if let Gesture::Swipe(s) = &self.event {
                     if_debug!(self.debug, s);
                     for i in &self.config.clone().gestures {

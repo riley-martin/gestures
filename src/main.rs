@@ -39,7 +39,10 @@ fn main() {
     //     ],
     // );
 
-    let c = config::Config::read_default_config().expect("failed to read config");
+    let c = config::Config::read_default_config().unwrap_or_else(|_| {
+        eprintln!("Could not read configuration file, using empty config!");
+        Config::default()
+    });
     let debug = app.debug || app.verbose > 0;
     if_debug!(debug, &c);
     let mut eh = gestures::EventHandler::new(Rc::new(c), debug);
@@ -52,10 +55,13 @@ fn main() {
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 struct App {
+    /// Verbosity, can be repeated
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
+    /// Debug mode
     #[arg(short, long)]
     debug: bool,
+    /// Path to config file
     #[arg(short, long, value_name = "FILE")]
     conf: Option<PathBuf>,
 }
