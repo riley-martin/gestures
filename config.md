@@ -7,34 +7,40 @@ encountered.
 The configuration format is based on s-expressions.
 ```lisp
 (
-  ;; device specifies which touchpad device to use. If left empty, selection is automatic.
-  ;; Currently HAS NO EFFECT
-  (device)
-  ;; list of gestures. Available options are `swipe`, `pinch`, `hold` and `rotate`.
-  ;; Only `swipe` and `pinch` are currently implemented, others are ignored.
-  ;;
-  ;; All fields shown are required
+  ; device specifies which touchpad device to use. If left empty, selection is automatic.
+  ; Currently HAS NO EFFECT
+  ; (device)
+  ; list of gestures. Available options are `swipe`, `pinch`, `hold` and `rotate`.
+  ; Only `swipe` and `pinch` are currently implemented, others are ignored.
+  ;
+  ; All fields shown are required
   (gestures
     (swipe
-      ;; `direction`: can be N, S, E, W, NE, NW, SE or SW
+      ; `direction`: can be N, S, E, W, NE, NW, SE or SW
       (direction . N)
-      ;; `fingers`: basically can be 3 or 4, because less than three libinput does not recognize
-      ;; as a gesture, and AFAICT more than four are not counted
+      ; `fingers`: basically can be 3 or 4, because less than three libinput does not recognize
+      ; as a gesture, and AFAICT more than four are not counted
       (fingers . 4)
-      ;; `action`: command to execute. Anything that works with `sh -c` should work here.
+      ; `action`: command to execute. Anything that works with `sh -c` should work here.
       (action . "rofi -show drun")
+      ; `repeat`: specifies whether this should be executed whenever an update event is recieved (`continuous`)
+      ; or only after the event is complete (`oneshot`)
+      (repeat . oneshot)
     )
     (pinch
-      ;; currently does nothing, may be used in the future
+      ; currently does nothing, may be used in the future
       (scale . 1.0)
-      ;; same as above
+      ; same as above
       (fingers . 3)
-      ;; `direction`: in or out
+      ; `direction`: in or out
       (direction . in)
-      ;; same as above
+      ; same as above
       (action . "killall rofi")
+      ; same as above
+      (repeat . oneshot)
     )
-    ;; hold action
+    ; hold action
+    ; note that only oneshot is supported here
     (hold
       (fingers . 4)
       (action . "rofi -show drun")

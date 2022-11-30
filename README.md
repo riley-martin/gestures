@@ -12,7 +12,7 @@ as well.
   - [x] Pinch events
   - [x] Hold events
   - [ ] Rotate events
-  - [ ] Continuous and one-shot events (currently only continuous is supported)
+  - [x] Continuous and one-shot events
 - [x] Config file
 
 ## Configuration
