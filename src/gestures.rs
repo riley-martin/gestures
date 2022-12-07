@@ -1,5 +1,3 @@
-use libc::{O_RDONLY, O_RDWR, O_WRONLY};
-use nix::poll::{poll, PollFd, PollFlags};
 use std::{
     fs::{File, OpenOptions},
     os::unix::prelude::{AsRawFd, FromRawFd, IntoRawFd, OpenOptionsExt, RawFd},
@@ -8,7 +6,6 @@ use std::{
     rc::Rc,
 };
 
-use crate::config::Config;
 use input::{
     event::{
         gesture::{
@@ -19,8 +16,13 @@ use input::{
     },
     DeviceCapability, Libinput, LibinputInterface,
 };
+use libc::{O_RDWR, O_WRONLY};
+use nix::poll::{poll, PollFd, PollFlags};
 use serde::{Deserialize, Serialize};
 
+use crate::config::Config;
+
+// Tiny little macro to keep from having to write if statements everywhere
 #[macro_export]
 macro_rules! if_debug {
     ($d:expr, $($item:expr),*) => {
@@ -31,12 +33,12 @@ macro_rules! if_debug {
     }
 }
 
-/// Direction of gestures
+/// Direction of swipe gestures
 ///
 /// NW  N  NE
 /// W   C   E
 /// SW  S  SE
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Direction {
     /// No swipe
     C,
@@ -50,7 +52,8 @@ pub enum Direction {
     SW,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Direction of pinch gestures
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum InOut {
     In,
@@ -58,7 +61,7 @@ pub enum InOut {
     None,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Repeat {
     Oneshot,
@@ -75,7 +78,7 @@ pub enum Gesture {
     None,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Swipe {
     pub direction: Direction,
     pub fingers: i32,
@@ -92,7 +95,7 @@ pub struct Pinch {
     pub action: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Hold {
     pub fingers: i32,
     pub action: String,
@@ -114,6 +117,7 @@ pub struct EventHandler {
     debug: bool,
 }
 
+// This looks almost too much like a 'god object'
 impl EventHandler {
     pub fn new(config: Rc<Config>, debug: bool) -> Self {
         Self {
@@ -187,8 +191,9 @@ impl EventHandler {
                     action: "".to_string(),
                 })
             }
-            GestureHoldEvent::End(e) => {
+            GestureHoldEvent::End(_e) => {
                 if let Gesture::Hold(s) = &self.event {
+                    if_debug!(self.debug, "Hold", &s.fingers);
                     for i in &self.config.clone().gestures {
                         if let Gesture::Hold(j) = i {
                             if j.fingers == s.fingers {
@@ -238,7 +243,7 @@ impl EventHandler {
                     })
                 }
             }
-            GesturePinchEvent::End(e) => {
+            GesturePinchEvent::End(_e) => {
                 if let Gesture::Pinch(s) = &self.event {
                     for i in &self.config.clone().gestures {
                         if let Gesture::Pinch(j) = i {
@@ -254,7 +259,9 @@ impl EventHandler {
         }
     }
 
+    // This code is sort of a mess
     fn direction(&self, x: f64, y: f64) -> Direction {
+        // ratio at which a gesture is called diagonal
         let oblique_ratio = 0.414;
         if x.abs() > y.abs() {
             let sd = if x < 0.0 { Direction::W } else { Direction::E };

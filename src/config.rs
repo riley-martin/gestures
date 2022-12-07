@@ -1,14 +1,10 @@
-use std::{
-    env, fs,
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::{env, fs, path::Path};
 
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
-use serde_lexpr::{from_str, to_string};
+use serde_lexpr::from_str;
 
-use crate::gestures::{Direction, Gesture};
+use crate::gestures::Gesture;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Default)]
 pub struct Config {
@@ -17,28 +13,31 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(device: Option<String>, gestures: Vec<Gesture>) -> Self {
-        Self { device, gestures }
-    }
-
-    pub fn read_from_file(file: &PathBuf) -> Self {
-        todo!();
+    pub fn read_from_file(file: &Path) -> Result<Self> {
+        match fs::read_to_string(file) {
+            Ok(s) => Ok(from_str(&s)?),
+            _ => bail!("Could not read config file"),
+        }
     }
 
     pub fn read_default_config() -> Result<Self> {
         let home = env::var("HOME")?;
+
         let path = &format!("{}/.config/gestures.conf", home);
-        if let Ok(s) = fs::read_to_string(Path::new(path)) {
-            return Ok(from_str(&s)?);
+        if let Ok(s) = Self::read_from_file(Path::new(path)) {
+            return Ok(s);
         }
+
         let path = &format!("{}/.config/gestures/gestures.conf", home);
-        if let Ok(s) = fs::read_to_string(Path::new(path)) {
-            return Ok(from_str(&s)?);
+        if let Ok(s) = Self::read_from_file(Path::new(path)) {
+            return Ok(s);
         }
+
         let path = &format!("{}/.gestures.conf", home);
-        if let Ok(s) = fs::read_to_string(Path::new(path)) {
-            return Ok(from_str(&s)?);
+        if let Ok(s) = Self::read_from_file(Path::new(path)) {
+            return Ok(s);
         }
+
         bail!("could not find config file")
     }
 }

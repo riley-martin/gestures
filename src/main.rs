@@ -4,40 +4,12 @@ mod utils;
 
 use std::{path::PathBuf, rc::Rc};
 
-use clap::{Parser, Subcommand};
-use serde_lexpr::to_string;
+use clap::Parser;
 
-use crate::{config::*, gestures::*};
+use crate::config::*;
 
 fn main() {
     let app = App::parse();
-    // let c = config::Config::new(
-    //     None,
-    //     vec![
-    //         Gesture::Swipe(Swipe {
-    //             direction: Direction::N,
-    //             fingers: 4,
-    //             action: "/home/riley/.config/rofi/scripts/launcher_custom".to_string(),
-    //         }),
-    //         Gesture::Swipe(Swipe {
-    //             direction: Direction::S,
-    //             fingers: 4,
-    //             action: "killall rofi".to_string(),
-    //         }),
-    //         Gesture::Pinch(Pinch {
-    //             scale: 1.0,
-    //             fingers: 3,
-    //             direction: InOut::Out,
-    //             action: "/home/riley/.config/rofi/scripts/launcher_custom".to_string(),
-    //         }),
-    //         Gesture::Pinch(Pinch {
-    //             scale: 1.0,
-    //             fingers: 3,
-    //             direction: InOut::In,
-    //             action: "killall rofi".to_string(),
-    //         }),
-    //     ],
-    // );
 
     let c = config::Config::read_default_config().unwrap_or_else(|_| {
         eprintln!("Could not read configuration file, using empty config!");
