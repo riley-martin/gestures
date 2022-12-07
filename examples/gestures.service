@@ -1,0 +1,14 @@
+[Unit]
+Description=Touchpad Gestures
+Documentation=https://github.com/riley-martin/gestures
+
+[Service]
+Environment=PATH=/usr/local/bin:/usr/local/sbin:/usr/bin:/bin
+Environment=DISPLAY=:0
+Environment=HOME=/home/riley
+Type=simple
+ExecStart=/home/riley/.cargo/bin/gestures
+Restart=never
+
+[Install]
+WantedBy=default.target

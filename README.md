@@ -19,16 +19,29 @@ as well.
 See [config.md](./config.md) for configuration instructions.
 
 ## Installation
+### Platforms
+Linux. Currently is only tested on Arch Linux, but should work on any distro if it uses the
+`libinput` touchpad driver rather than the older `synaptics` driver.  
+Note: If your DE/WM has its own touchpad gestures system, it will most likely need to be disabled to
+prevent conflicts.
 ### With Cargo
 If you have cargo installed, simply use `cargo install gestures`
 ### Manual installation
 - Clone the repo
-  - `git clone https://github.com/riley-martin/gestures`
+  - `git clone https://github.com/riley-martin/gestures && cd gestures`
 
 - Build
   - `cargo build --release`
 
-- Copy `gestures/target/release/gestures` to a convenient place and execute it
+- Copy `./target/release/gestures` to a convenient place and execute it
+### Autostart
+#### Systemd
+Drop [examples/gestures.service](./examples/gestures.service) into `~/.config/systemd/user/gestures.service`
+and modify it for your system (mainly the "$HOME" environment variable and the `ExecStart` will need changed).
+To have it start automatically, run `systemctl --user enable --now gestures.service`.
+#### Other init systems
+I haven't used any other init systems, but the service is quite simple so it should be easy to modify
+for other systems.
 
 ## Alternatives
 Here are some alternatives that may suit your use case better, as well as the reasons I don't use them.
