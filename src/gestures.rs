@@ -52,6 +52,63 @@ pub enum Direction {
     SW,
 }
 
+impl Direction {
+    // This code is sort of a mess
+    pub fn dir(x: f64, y: f64) -> Direction {
+        // ratio at which a gesture is called diagonal
+        if x.abs() == 0.0 && y.abs() == 0.0 {
+            return Direction::C;
+        }
+        let oblique_ratio = 0.414;
+        if x.abs() > y.abs() {
+            let sd = if x < 0.0 { Direction::W } else { Direction::E };
+            if y.abs() / x.abs() > oblique_ratio {
+                if sd == Direction::W {
+                    if y < 0.0 {
+                        Direction::NW
+                    } else {
+                        Direction::SW
+                    }
+                } else if sd == Direction::E {
+                    if y < 0.0 {
+                        Direction::NE
+                    } else {
+                        Direction::SE
+                    }
+                } else {
+                    Direction::C
+                }
+            } else {
+                sd
+            }
+        } else {
+            // Don't ask me why, but for libinput the coordinates increase downward. This does
+            // hold out the same as screen coordinates, but it starts in the center instead of
+            // the upper left
+            let sd = if y < 0.0 { Direction::N } else { Direction::S };
+            if x.abs() / y.abs() > oblique_ratio {
+                if sd == Direction::N {
+                    if x < 0.0 {
+                        Direction::NW
+                    } else {
+                        Direction::NE
+                    }
+                } else if sd == Direction::S {
+                    if x < 0.0 {
+                        Direction::SW
+                    } else {
+                        Direction::SE
+                    }
+                } else {
+                    Direction::C
+                }
+            } else {
+                sd
+            }
+        }
+    }
+}
+
 /// Direction of pinch gestures
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -259,55 +316,6 @@ impl EventHandler {
         }
     }
 
-    // This code is sort of a mess
-    fn direction(&self, x: f64, y: f64) -> Direction {
-        // ratio at which a gesture is called diagonal
-        let oblique_ratio = 0.414;
-        if x.abs() > y.abs() {
-            let sd = if x < 0.0 { Direction::W } else { Direction::E };
-            if y.abs() / x.abs() > oblique_ratio {
-                if sd == Direction::W {
-                    if y < 0.0 {
-                        Direction::NW
-                    } else {
-                        Direction::SW
-                    }
-                } else if sd == Direction::E {
-                    if y < 0.0 {
-                        Direction::NE
-                    } else {
-                        Direction::SE
-                    }
-                } else {
-                    Direction::C
-                }
-            } else {
-                sd
-            }
-        } else {
-            let sd = if y < 0.0 { Direction::N } else { Direction::S };
-            if x.abs() / y.abs() > oblique_ratio {
-                if sd == Direction::N {
-                    if x < 0.0 {
-                        Direction::NW
-                    } else {
-                        Direction::NE
-                    }
-                } else if sd == Direction::S {
-                    if x < 0.0 {
-                        Direction::SW
-                    } else {
-                        Direction::SE
-                    }
-                } else {
-                    Direction::C
-                }
-            } else {
-                sd
-            }
-        }
-    }
-
     fn handle_swipe_event(&mut self, event: GestureSwipeEvent) {
         match event {
             GestureSwipeEvent::Begin(e) => {
@@ -320,7 +328,7 @@ impl EventHandler {
             }
             GestureSwipeEvent::Update(e) => {
                 let (x, y) = (e.dx(), e.dy());
-                let swipe_dir = self.direction(x, y);
+                let swipe_dir = Direction::dir(x, y);
 
                 if let Gesture::Swipe(s) = &self.event {
                     if_debug!(self.debug, &swipe_dir, &s.fingers);

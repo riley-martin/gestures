@@ -2,6 +2,9 @@ mod config;
 mod gestures;
 mod utils;
 
+#[cfg(test)]
+mod tests;
+
 use std::{path::PathBuf, rc::Rc};
 
 use clap::Parser;
