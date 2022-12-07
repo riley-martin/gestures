@@ -20,10 +20,12 @@ See [config.md](./config.md) for configuration instructions.
 
 ## Installation
 ### Platforms
-Linux. Currently is only tested on Arch Linux, but should work on any distro if it uses the
+Linux. The testing workflow runs on Ubuntu and I test it myself on Arch Linux, but it should work on any distro if it uses the
 `libinput` touchpad driver rather than the older `synaptics` driver.  
 Note: If your DE/WM has its own touchpad gestures system, it will most likely need to be disabled to
 prevent conflicts.
+### Dependencies
+You may need to install `libudev` and `libinput`, or their equivalant for your distro, and possibly the `dev` versions as well.
 ### With Cargo
 If you have cargo installed, simply use `cargo install gestures`
 ### Manual installation
