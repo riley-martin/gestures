@@ -41,8 +41,7 @@ macro_rules! if_debug {
 /// SW  S  SE
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Direction {
-    /// No swipe
-    C,
+    Any,
     N,
     S,
     E,
@@ -57,7 +56,7 @@ impl Direction {
     // This code is sort of a mess
     pub fn dir(x: f64, y: f64) -> Direction {
         if x.abs() == 0.0 && y.abs() == 0.0 {
-            return Direction::C;
+            return Direction::Any;
         }
         let oblique_ratio = 0.414;
         if x.abs() > y.abs() {
@@ -76,7 +75,7 @@ impl Direction {
                         Direction::SE
                     }
                 } else {
-                    Direction::C
+                    Direction::Any
                 }
             } else {
                 sd
@@ -100,7 +99,7 @@ impl Direction {
                         Direction::SE
                     }
                 } else {
-                    Direction::C
+                    Direction::Any
                 }
             } else {
                 sd
@@ -325,7 +324,7 @@ impl EventHandler {
         match event {
             GestureSwipeEvent::Begin(e) => {
                 self.event = Gesture::Swipe(Swipe {
-                    direction: Direction::C,
+                    direction: Direction::Any,
                     fingers: e.finger_count(),
                     repeat: Repeat::Oneshot,
                     action: None,
@@ -335,7 +334,9 @@ impl EventHandler {
                 if let Gesture::Swipe(s) = &self.event {
                     for i in &self.config.clone().gestures {
                         if let Gesture::Swipe(j) = i {
-                            if j.fingers == s.fingers && j.direction == s.direction {
+                            if j.fingers == s.fingers
+                                && (j.direction == s.direction || j.direction == Direction::Any)
+                            {
                                 exec_command_from_string(
                                     &j.start.clone().unwrap_or_default(),
                                     0.0,
@@ -355,7 +356,7 @@ impl EventHandler {
                     for i in &self.config.clone().gestures {
                         if let Gesture::Swipe(j) = i {
                             if j.fingers == s.fingers
-                                && j.direction == swipe_dir
+                                && (j.direction == swipe_dir || j.direction == Direction::Any)
                                 && j.repeat == Repeat::Continuous
                             {
                                 exec_command_from_string(
@@ -381,7 +382,9 @@ impl EventHandler {
                     if !e.cancelled() {
                         for i in &self.config.clone().gestures {
                             if let Gesture::Swipe(j) = i {
-                                if j.fingers == s.fingers && j.direction == s.direction {
+                                if j.fingers == s.fingers
+                                    && (j.direction == s.direction || j.direction == Direction::Any)
+                                {
                                     exec_command_from_string(
                                         &j.end.clone().unwrap_or_default(),
                                         0.0,

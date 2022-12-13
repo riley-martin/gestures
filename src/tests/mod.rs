@@ -16,7 +16,7 @@ fn test_config_default() {
 
 #[test]
 fn test_direction_center() {
-    assert_eq!(Direction::C, Direction::dir(0.0, 0.0));
+    assert_eq!(Direction::Any, Direction::dir(0.0, 0.0));
 }
 
 #[test]
