@@ -140,7 +140,9 @@ pub struct Swipe {
     pub direction: Direction,
     pub fingers: i32,
     pub repeat: Repeat,
-    pub action: String,
+    pub action: Option<String>,
+    pub start: Option<String>,
+    pub end: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -326,8 +328,23 @@ impl EventHandler {
                     direction: Direction::C,
                     fingers: e.finger_count(),
                     repeat: Repeat::Oneshot,
-                    action: "".to_string(),
+                    action: None,
+                    start: None,
+                    end: None,
                 });
+                if let Gesture::Swipe(s) = &self.event {
+                    for i in &self.config.clone().gestures {
+                        if let Gesture::Swipe(j) = i {
+                            if j.fingers == s.fingers && j.direction == s.direction {
+                                exec_command_from_string(
+                                    &j.start.clone().unwrap_or_default(),
+                                    0.0,
+                                    0.0,
+                                )?;
+                            }
+                        }
+                    }
+                }
             }
             GestureSwipeEvent::Update(e) => {
                 let (x, y) = (e.dx(), e.dy());
@@ -341,7 +358,11 @@ impl EventHandler {
                                 && j.direction == swipe_dir
                                 && j.repeat == Repeat::Continuous
                             {
-                                exec_command_from_string(&j.action, x, y)?;
+                                exec_command_from_string(
+                                    &j.action.clone().unwrap_or_default(),
+                                    x,
+                                    y,
+                                )?;
                             }
                         }
                     }
@@ -349,7 +370,9 @@ impl EventHandler {
                         direction: swipe_dir,
                         fingers: s.fingers,
                         repeat: Repeat::Oneshot,
-                        action: "".to_string(),
+                        action: None,
+                        start: None,
+                        end: None,
                     })
                 }
             }
@@ -359,7 +382,11 @@ impl EventHandler {
                         for i in &self.config.clone().gestures {
                             if let Gesture::Swipe(j) = i {
                                 if j.fingers == s.fingers && j.direction == s.direction {
-                                    exec_command_from_string(&j.action, 0.0, 0.0)?;
+                                    exec_command_from_string(
+                                        &j.end.clone().unwrap_or_default(),
+                                        0.0,
+                                        0.0,
+                                    )?;
                                 }
                             }
                         }
