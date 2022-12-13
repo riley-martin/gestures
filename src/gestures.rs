@@ -41,8 +41,8 @@ macro_rules! if_debug {
 /// SW  S  SE
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Direction {
-    /// No swipe
-    C,
+    #[serde(rename = "any")]
+    Any,
     N,
     S,
     E,
@@ -57,7 +57,7 @@ impl Direction {
     // This code is sort of a mess
     pub fn dir(x: f64, y: f64) -> Direction {
         if x.abs() == 0.0 && y.abs() == 0.0 {
-            return Direction::C;
+            return Direction::Any;
         }
         let oblique_ratio = 0.414;
         if x.abs() > y.abs() {
@@ -76,7 +76,7 @@ impl Direction {
                         Direction::SE
                     }
                 } else {
-                    Direction::C
+                    Direction::Any
                 }
             } else {
                 sd
@@ -100,7 +100,7 @@ impl Direction {
                         Direction::SE
                     }
                 } else {
-                    Direction::C
+                    Direction::Any
                 }
             } else {
                 sd
@@ -115,7 +115,7 @@ impl Direction {
 pub enum InOut {
     In,
     Out,
-    None,
+    Any,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -139,17 +139,18 @@ pub enum Gesture {
 pub struct Swipe {
     pub direction: Direction,
     pub fingers: i32,
-    pub repeat: Repeat,
-    pub action: String,
+    pub update: Option<String>,
+    pub start: Option<String>,
+    pub end: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Pinch {
-    pub scale: f64,
     pub fingers: i32,
     pub direction: InOut,
-    pub repeat: Repeat,
-    pub action: String,
+    pub update: Option<String>,
+    pub start: Option<String>,
+    pub end: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -255,7 +256,7 @@ impl EventHandler {
                     for i in &self.config.clone().gestures {
                         if let Gesture::Hold(j) = i {
                             if j.fingers == s.fingers {
-                                exec_command_from_string(&j.action)?;
+                                exec_command_from_string(&j.action, 0.0, 0.0, 0.0)?;
                             }
                         }
                     }
@@ -271,11 +272,28 @@ impl EventHandler {
             GesturePinchEvent::Begin(e) => {
                 self.event = Gesture::Pinch(Pinch {
                     fingers: e.finger_count(),
-                    scale: 0.0,
-                    direction: InOut::None,
-                    repeat: Repeat::Oneshot,
-                    action: "".to_string(),
-                })
+                    direction: InOut::Any,
+                    update: None,
+                    start: None,
+                    end: None,
+                });
+                if let Gesture::Pinch(s) = &self.event {
+                    for i in &self.config.clone().gestures {
+                        if let Gesture::Pinch(j) = i {
+                            if (j.direction == s.direction || j.direction == InOut::Any)
+                                && j.fingers == s.fingers
+                            {
+                                if_debug!(self.debug, "oneshot pinch gesture");
+                                exec_command_from_string(
+                                    &j.start.clone().unwrap_or_default(),
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                )?;
+                            }
+                        }
+                    }
+                }
             }
             GesturePinchEvent::Update(e) => {
                 let scale = e.scale();
@@ -284,21 +302,26 @@ impl EventHandler {
                     if_debug!(self.debug, &scale, &dir, &s.fingers);
                     for i in &self.config.clone().gestures {
                         if let Gesture::Pinch(j) = i {
-                            if j.direction == dir
+                            if (j.direction == dir || j.direction == InOut::Any)
                                 && j.fingers == s.fingers
-                                && j.repeat == Repeat::Continuous
+                            // && j.repeat == Repeat::Continuous
                             {
                                 if_debug!(self.debug, "continuous pinch gesture");
-                                exec_command_from_string(&j.action)?;
+                                exec_command_from_string(
+                                    &j.update.clone().unwrap_or_default(),
+                                    0.0,
+                                    0.0,
+                                    scale,
+                                )?;
                             }
                         }
                     }
                     self.event = Gesture::Pinch(Pinch {
                         fingers: s.fingers,
-                        scale: 0.0,
                         direction: dir,
-                        repeat: Repeat::Oneshot,
-                        action: "".to_string(),
+                        update: None,
+                        start: None,
+                        end: None,
                     })
                 }
             }
@@ -306,9 +329,16 @@ impl EventHandler {
                 if let Gesture::Pinch(s) = &self.event {
                     for i in &self.config.clone().gestures {
                         if let Gesture::Pinch(j) = i {
-                            if j.direction == s.direction && j.fingers == s.fingers {
+                            if (j.direction == s.direction || j.direction == InOut::Any)
+                                && j.fingers == s.fingers
+                            {
                                 if_debug!(self.debug, "oneshot pinch gesture");
-                                exec_command_from_string(&j.action)?;
+                                exec_command_from_string(
+                                    &j.end.clone().unwrap_or_default(),
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                )?;
                             }
                         }
                     }
@@ -323,11 +353,28 @@ impl EventHandler {
         match event {
             GestureSwipeEvent::Begin(e) => {
                 self.event = Gesture::Swipe(Swipe {
-                    direction: Direction::C,
+                    direction: Direction::Any,
                     fingers: e.finger_count(),
-                    repeat: Repeat::Oneshot,
-                    action: "".to_string(),
+                    update: None,
+                    start: None,
+                    end: None,
                 });
+                if let Gesture::Swipe(s) = &self.event {
+                    for i in &self.config.clone().gestures {
+                        if let Gesture::Swipe(j) = i {
+                            if j.fingers == s.fingers
+                                && (j.direction == s.direction || j.direction == Direction::Any)
+                            {
+                                exec_command_from_string(
+                                    &j.start.clone().unwrap_or_default(),
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                )?;
+                            }
+                        }
+                    }
+                }
             }
             GestureSwipeEvent::Update(e) => {
                 let (x, y) = (e.dx(), e.dy());
@@ -338,18 +385,24 @@ impl EventHandler {
                     for i in &self.config.clone().gestures {
                         if let Gesture::Swipe(j) = i {
                             if j.fingers == s.fingers
-                                && j.direction == swipe_dir
-                                && j.repeat == Repeat::Continuous
+                                && (j.direction == swipe_dir || j.direction == Direction::Any)
+                            // && j.repeat == Repeat::Continuous
                             {
-                                exec_command_from_string(&j.action)?;
+                                exec_command_from_string(
+                                    &j.update.clone().unwrap_or_default(),
+                                    x,
+                                    y,
+                                    0.0,
+                                )?;
                             }
                         }
                     }
                     self.event = Gesture::Swipe(Swipe {
                         direction: swipe_dir,
                         fingers: s.fingers,
-                        repeat: Repeat::Oneshot,
-                        action: "".to_string(),
+                        update: None,
+                        start: None,
+                        end: None,
                     })
                 }
             }
@@ -358,8 +411,15 @@ impl EventHandler {
                     if !e.cancelled() {
                         for i in &self.config.clone().gestures {
                             if let Gesture::Swipe(j) = i {
-                                if j.fingers == s.fingers && j.direction == s.direction {
-                                    exec_command_from_string(&j.action)?;
+                                if j.fingers == s.fingers
+                                    && (j.direction == s.direction || j.direction == Direction::Any)
+                                {
+                                    exec_command_from_string(
+                                        &j.end.clone().unwrap_or_default(),
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                    )?;
                                 }
                             }
                         }

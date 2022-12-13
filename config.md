@@ -16,28 +16,29 @@ The configuration format is based on s-expressions.
   ; All fields shown are required
   (gestures
     (swipe
-      ; `direction`: can be N, S, E, W, NE, NW, SE or SW
+      ; `direction`: can be N, S, E, W, NE, NW, SE, SW or any
       (direction . N)
       ; `fingers`: basically can be 3 or 4, because less than three libinput does not recognize
       ; as a gesture, and AFAICT more than four are not counted
       (fingers . 4)
-      ; `action`: command to execute. Anything that works with `sh -c` should work here.
-      (action . "rofi -show drun")
-      ; `repeat`: specifies whether this should be executed whenever an update event is recieved (`continuous`)
-      ; or only after the event is complete (`oneshot`)
-      (repeat . oneshot)
+      ; `action`: command to execute on update event. Anything that works with `sh -c` should work here.
+      (update . (""))
+      ; `start`: command to execute on start event
+      (start . (""))
+      ; `end`: command to execute on end event
+      (end . ("rofi -show drun"))
     )
     (pinch
-      ; currently does nothing, may be used in the future
-      (scale . 1.0)
       ; same as above
       (fingers . 3)
-      ; `direction`: in or out
+      ; `direction`: in or out or any
       (direction . in)
       ; same as above
-      (action . "killall rofi")
+      (update . (""))
       ; same as above
-      (repeat . oneshot)
+      (start . (""))
+      ; same as above
+      (end . ("killall rofi"))
     )
     ; hold action
     ; note that only oneshot is supported here

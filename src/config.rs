@@ -14,6 +14,7 @@ pub struct Config {
 
 impl Config {
     pub fn read_from_file(file: &Path) -> Result<Self> {
+        crate::if_debug!(true, &file);
         match fs::read_to_string(file) {
             Ok(s) => Ok(from_str(&s)?),
             _ => bail!("Could not read config file"),
@@ -22,6 +23,8 @@ impl Config {
 
     pub fn read_default_config() -> Result<Self> {
         let home = env::var("HOME")?;
+
+        crate::if_debug!(true, &home);
 
         let path = &format!("{}/.config/gestures.conf", home);
         if let Ok(s) = Self::read_from_file(Path::new(path)) {
