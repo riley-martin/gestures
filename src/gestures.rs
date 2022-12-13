@@ -255,7 +255,7 @@ impl EventHandler {
                     for i in &self.config.clone().gestures {
                         if let Gesture::Hold(j) = i {
                             if j.fingers == s.fingers {
-                                exec_command_from_string(&j.action)?;
+                                exec_command_from_string(&j.action, 0.0, 0.0)?;
                             }
                         }
                     }
@@ -289,7 +289,7 @@ impl EventHandler {
                                 && j.repeat == Repeat::Continuous
                             {
                                 if_debug!(self.debug, "continuous pinch gesture");
-                                exec_command_from_string(&j.action)?;
+                                exec_command_from_string(&j.action, 0.0, 0.0)?;
                             }
                         }
                     }
@@ -308,7 +308,7 @@ impl EventHandler {
                         if let Gesture::Pinch(j) = i {
                             if j.direction == s.direction && j.fingers == s.fingers {
                                 if_debug!(self.debug, "oneshot pinch gesture");
-                                exec_command_from_string(&j.action)?;
+                                exec_command_from_string(&j.action, 0.0, 0.0)?;
                             }
                         }
                     }
@@ -341,7 +341,7 @@ impl EventHandler {
                                 && j.direction == swipe_dir
                                 && j.repeat == Repeat::Continuous
                             {
-                                exec_command_from_string(&j.action)?;
+                                exec_command_from_string(&j.action, x, y)?;
                             }
                         }
                     }
@@ -359,7 +359,7 @@ impl EventHandler {
                         for i in &self.config.clone().gestures {
                             if let Gesture::Swipe(j) = i {
                                 if j.fingers == s.fingers && j.direction == s.direction {
-                                    exec_command_from_string(&j.action)?;
+                                    exec_command_from_string(&j.action, 0.0, 0.0)?;
                                 }
                             }
                         }
