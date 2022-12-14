@@ -5,13 +5,13 @@ mod utils;
 #[cfg(test)]
 mod tests;
 
-use std::{path::PathBuf, rc::Rc};
+use std::{error::Error, path::PathBuf, rc::Rc};
 
 use clap::Parser;
 
 use crate::config::*;
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let app = App::parse();
 
     let c = config::Config::read_default_config().unwrap_or_else(|_| {
@@ -22,9 +22,9 @@ fn main() {
     if_debug!(debug, &c);
     let mut eh = gestures::EventHandler::new(Rc::new(c), debug);
     let mut interface = input::Libinput::new_with_udev(gestures::Interface);
-    eh.init(&mut interface)
-        .expect("could not initialize libinput");
+    eh.init(&mut interface)?;
     eh.main_loop(&mut interface);
+    Ok(())
 }
 
 #[derive(Parser, Debug)]
