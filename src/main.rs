@@ -9,13 +9,31 @@ use std::{path::PathBuf, rc::Rc};
 
 use anyhow::Result;
 use clap::Parser;
+use env_logger::Builder;
+use log::LevelFilter;
 
 use crate::config::*;
 
 fn main() -> Result<()> {
     let app = App::parse();
 
-    env_logger::init();
+    {
+        let mut l = Builder::from_default_env();
+
+        if app.verbose > 0 {
+            l.filter_level(match app.verbose {
+                1 => LevelFilter::Info,
+                2 => LevelFilter::Debug,
+                _ => LevelFilter::max(),
+            });
+        }
+
+        if app.debug {
+            l.filter_level(LevelFilter::Debug);
+        }
+
+        l.init();
+    }
 
     let c = if let Some(p) = app.conf {
         Config::read_from_file(&p)?
