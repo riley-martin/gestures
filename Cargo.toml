@@ -18,3 +18,4 @@ anyhow = "1.0.66"
 regex = "1.7"
 log = "0.4.17"
 env_logger = "0.10.0"
+miette = { version = "5.5.0", features = ["fancy"] }

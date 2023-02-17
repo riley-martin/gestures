@@ -1,6 +1,6 @@
 use std::{env, fs, path::Path};
 
-use anyhow::{bail, Result};
+use miette::{bail, IntoDiagnostic, Result};
 use serde::{Deserialize, Serialize};
 use serde_lexpr::from_str;
 
@@ -16,27 +16,27 @@ impl Config {
     pub fn read_from_file(file: &Path) -> Result<Self> {
         log::debug!("{:?}", &file);
         match fs::read_to_string(file) {
-            Ok(s) => Ok(from_str(&s)?),
+            Ok(s) => Ok(from_str(&s).into_diagnostic()?),
             _ => bail!("Could not read config file"),
         }
     }
 
     pub fn read_default_config() -> Result<Self> {
-        let home = env::var("HOME")?;
+        let home = env::var("HOME").into_diagnostic()?;
 
         log::debug!("{:?}", &home);
 
-        let path = &format!("{}/.config/gestures.conf", home);
+        let path = &format!("{home}/.config/gestures.conf");
         if let Ok(s) = Self::read_from_file(Path::new(path)) {
             return Ok(s);
         }
 
-        let path = &format!("{}/.config/gestures/gestures.conf", home);
+        let path = &format!("{home}/.config/gestures/gestures.conf");
         if let Ok(s) = Self::read_from_file(Path::new(path)) {
             return Ok(s);
         }
 
-        let path = &format!("{}/.gestures.conf", home);
+        let path = &format!("{home}/.gestures.conf");
         if let Ok(s) = Self::read_from_file(Path::new(path)) {
             return Ok(s);
         }

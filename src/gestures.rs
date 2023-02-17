@@ -5,7 +5,6 @@ use std::{
     rc::Rc,
 };
 
-use anyhow::{bail, Result};
 use input::{
     event::{
         gesture::{
@@ -17,6 +16,7 @@ use input::{
     DeviceCapability, Libinput, LibinputInterface,
 };
 use libc::{O_RDWR, O_WRONLY};
+use miette::{miette, Result};
 use nix::poll::{poll, PollFd, PollFlags};
 use serde::{Deserialize, Serialize};
 
@@ -174,7 +174,7 @@ impl EventHandler {
         if self.has_gesture_device(input) {
             Ok(())
         } else {
-            bail!("Could not find gesture device");
+            Err(miette!("Could not find gesture device"))
         }
     }
 
