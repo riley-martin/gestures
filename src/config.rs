@@ -17,8 +17,7 @@ impl Config {
     pub fn read_from_file(file: &Path) -> Result<Self> {
         log::debug!("{:?}", &file);
         match fs::read_to_string(file) {
-            // Ok(s) => Ok(parse::<Config>(file.to_str().unwrap(), &s).into_diagnostic()?),
-            Ok(s) => Ok(parse::<Config>(file.to_str().unwrap(), &s).unwrap()),
+            Ok(s) => Ok(parse::<Config>(file.to_str().unwrap(), &s).into_diagnostic()?),
             _ => bail!("Could not read config file"),
         }
     }
