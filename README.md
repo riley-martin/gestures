@@ -20,7 +20,7 @@ See [config.md](./config.md) for configuration instructions.
 
 ## Installation
 ### Platforms
-Linux. The testing workflow runs on Ubuntu and I test it myself on Arch Linux, but it should work on any distro if it uses the
+Linux. The testing workflow runs on Ubuntu and I test it myself on Artix Linux, but it should work on any distro if it uses the
 `libinput` touchpad driver rather than the older `synaptics` driver.  
 Note: If your DE/WM has its own touchpad gestures system, it will most likely need to be disabled to
 prevent conflicts.
@@ -37,6 +37,8 @@ If you have cargo installed, simply use `cargo install gestures`
 
 - Copy `./target/release/gestures` to a convenient place and execute it
 ### Autostart
+#### Compositor/WM
+You can start `gestures` in your `.xinitrc` or other startup files (like sway config file, for example)
 #### Systemd
 Drop [examples/gestures.service](./examples/gestures.service) into `~/.config/systemd/user/gestures.service`
 and modify it for your system (mainly the "$HOME" environment variable and the `ExecStart` will need changed).
@@ -46,14 +48,14 @@ I haven't used any other init systems, but the service is quite simple so it sho
 for other systems.
 
 ## Alternatives
-Here are some alternatives that may suit your use case better, as well as the reasons I don't use them.
+Here are some alternatives with similar features.
 
-- [libinput-gestures](https://github.com/bulletmark/libinput-gestures)  
-Parses `libinput debug-events` rather than using libinput api, which is less memory and cpu efficient
+- [libinput-gestures](https://github.com/bulletmark/libinput-gestures)
+Parses output of `libinput debug-events` rather than using libinput api.
 - [gebaar](https://github.com/Coffee2CodeNL/gebaar-libinput)
-Not maintained, only supports swipe gestures
+Only supports swipe gestures
 - [gebaar-libinput-fork](https://github.com/osleg/gebaar-libinput-fork)
-Fork of gebaar which supports other gestures, but is also not actively developed
+Fork of gebaar which supports other gestures
 - [fusuma](https://github.com/iberianpig/fusuma)
 Also parses `libinput debug-events` output
 
