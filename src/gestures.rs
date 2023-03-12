@@ -30,7 +30,7 @@ use crate::utils::exec_command_from_string;
 /// W   C   E
 /// SW  S  SE
 #[derive(DecodeScalar, Debug, Clone, PartialEq, Eq)]
-pub enum Direction {
+pub enum SwipeDir {
     Any,
     N,
     S,
@@ -42,51 +42,51 @@ pub enum Direction {
     SW,
 }
 
-impl Direction {
+impl SwipeDir {
     // This code is sort of a mess
-    pub fn dir(x: f64, y: f64) -> Direction {
+    pub fn dir(x: f64, y: f64) -> SwipeDir {
         if x.abs() == 0.0 && y.abs() == 0.0 {
-            return Direction::Any;
+            return SwipeDir::Any;
         }
         let oblique_ratio = 0.414;
         if x.abs() > y.abs() {
-            let sd = if x < 0.0 { Direction::W } else { Direction::E };
+            let sd = if x < 0.0 { SwipeDir::W } else { SwipeDir::E };
             if y.abs() / x.abs() > oblique_ratio {
-                if sd == Direction::W {
+                if sd == SwipeDir::W {
                     if y < 0.0 {
-                        Direction::NW
+                        SwipeDir::NW
                     } else {
-                        Direction::SW
+                        SwipeDir::SW
                     }
-                } else if sd == Direction::E {
+                } else if sd == SwipeDir::E {
                     if y < 0.0 {
-                        Direction::NE
+                        SwipeDir::NE
                     } else {
-                        Direction::SE
+                        SwipeDir::SE
                     }
                 } else {
-                    Direction::Any
+                    SwipeDir::Any
                 }
             } else {
                 sd
             }
         } else {
-            let sd = if y < 0.0 { Direction::N } else { Direction::S };
+            let sd = if y < 0.0 { SwipeDir::N } else { SwipeDir::S };
             if x.abs() / y.abs() > oblique_ratio {
-                if sd == Direction::N {
+                if sd == SwipeDir::N {
                     if x < 0.0 {
-                        Direction::NW
+                        SwipeDir::NW
                     } else {
-                        Direction::NE
+                        SwipeDir::NE
                     }
-                } else if sd == Direction::S {
+                } else if sd == SwipeDir::S {
                     if x < 0.0 {
-                        Direction::SW
+                        SwipeDir::SW
                     } else {
-                        Direction::SE
+                        SwipeDir::SE
                     }
                 } else {
-                    Direction::Any
+                    SwipeDir::Any
                 }
             } else {
                 sd
@@ -97,17 +97,35 @@ impl Direction {
 
 /// Direction of pinch gestures
 #[derive(DecodeScalar, Debug, Clone, PartialEq, Eq)]
-pub enum InOut {
+pub enum PinchDir {
     In,
     Out,
+    Clockwise,
+    CounterClockwise,
     Any,
 }
 
-// #[derive(DecodeScalar, Debug, Clone, PartialEq, Eq)]
-// pub enum Repeat {
-//     Oneshot,
-//     Continuous,
-// }
+impl PinchDir {
+    pub fn dir(scale: f64, delta_angle: f64) -> Self {
+        // If the scale is low enough, see if there is any rotation
+        // These values seem to work fairly well overall
+        if (scale > 0.92) && (scale < 1.08) {
+            if delta_angle > 0.0 {
+                Self::Clockwise
+            } else {
+                Self::CounterClockwise
+            }
+        // Otherwise we have a normal pinch
+        } else {
+            if scale > 1.0 {
+                Self::Out
+            } else {
+                Self::In
+            }
+        }
+    }
+}
+
 
 #[derive(Decode, Debug, Clone, PartialEq)]
 pub enum Gesture {
@@ -121,7 +139,7 @@ pub enum Gesture {
 #[derive(Decode, Debug, Clone, PartialEq, Eq)]
 pub struct Swipe {
     #[knuffel(property)]
-    pub direction: Direction,
+    pub direction: SwipeDir,
     #[knuffel(property)]
     pub fingers: i32,
     #[knuffel(property)]
@@ -137,7 +155,7 @@ pub struct Pinch {
     #[knuffel(property)]
     pub fingers: i32,
     #[knuffel(property)]
-    pub direction: InOut,
+    pub direction: PinchDir,
     #[knuffel(property)]
     pub update: Option<String>,
     #[knuffel(property)]
@@ -153,20 +171,6 @@ pub struct Hold {
     #[knuffel(property)]
     pub action: Option<String>,
 }
-
-// #[derive(Decode, Debug, Clone, PartialEq)]
-// pub struct Rotate {
-//     #[knuffel(property)]
-//     pub scale: f64,
-//     #[knuffel(property)]
-//     pub fingers: i32,
-//     #[knuffel(property)]
-//     pub delta_angle: f64,
-//     #[knuffel(property)]
-//     pub repeat: Repeat,
-//     #[knuffel(property)]
-//     pub action: String,
-// }
 
 #[derive(Debug)]
 pub struct EventHandler {
@@ -259,6 +263,7 @@ impl EventHandler {
                                     0.0,
                                     0.0,
                                     0.0,
+                                    0.0,
                                 )?;
                             }
                         }
@@ -275,7 +280,7 @@ impl EventHandler {
             GesturePinchEvent::Begin(e) => {
                 self.event = Gesture::Pinch(Pinch {
                     fingers: e.finger_count(),
-                    direction: InOut::Any,
+                    direction: PinchDir::Any,
                     update: None,
                     start: None,
                     end: None,
@@ -283,12 +288,13 @@ impl EventHandler {
                 if let Gesture::Pinch(s) = &self.event {
                     for i in &self.config.clone().gestures {
                         if let Gesture::Pinch(j) = i {
-                            if (j.direction == s.direction || j.direction == InOut::Any)
+                            if (j.direction == s.direction || j.direction == PinchDir::Any)
                                 && j.fingers == s.fingers
                             {
-                                log::debug!("oneshot pinch gesture");
+                                log::debug!("pinch gesture");
                                 exec_command_from_string(
                                     &j.start.clone().unwrap_or_default(),
+                                    0.0,
                                     0.0,
                                     0.0,
                                     0.0,
@@ -300,18 +306,20 @@ impl EventHandler {
             }
             GesturePinchEvent::Update(e) => {
                 let scale = e.scale();
+                let delta_angle = e.angle_delta();
                 if let Gesture::Pinch(s) = &self.event {
-                    let dir = if scale > 1.0 { InOut::Out } else { InOut::In };
+                    let dir = PinchDir::dir(scale, delta_angle);
                     log::debug!("{:?}  {:?}  {:?}", &scale, &dir, &s.fingers);
                     for i in &self.config.clone().gestures {
                         if let Gesture::Pinch(j) = i {
-                            if (j.direction == dir || j.direction == InOut::Any)
+                            if (j.direction == dir || j.direction == PinchDir::Any)
                                 && j.fingers == s.fingers
                             {
                                 exec_command_from_string(
                                     &j.update.clone().unwrap_or_default(),
                                     0.0,
                                     0.0,
+                                    delta_angle,
                                     scale,
                                 )?;
                             }
@@ -330,11 +338,12 @@ impl EventHandler {
                 if let Gesture::Pinch(s) = &self.event {
                     for i in &self.config.clone().gestures {
                         if let Gesture::Pinch(j) = i {
-                            if (j.direction == s.direction || j.direction == InOut::Any)
+                            if (j.direction == s.direction || j.direction == PinchDir::Any)
                                 && j.fingers == s.fingers
                             {
                                 exec_command_from_string(
                                     &j.end.clone().unwrap_or_default(),
+                                    0.0,
                                     0.0,
                                     0.0,
                                     0.0,
@@ -353,7 +362,7 @@ impl EventHandler {
         match event {
             GestureSwipeEvent::Begin(e) => {
                 self.event = Gesture::Swipe(Swipe {
-                    direction: Direction::Any,
+                    direction: SwipeDir::Any,
                     fingers: e.finger_count(),
                     update: None,
                     start: None,
@@ -363,10 +372,11 @@ impl EventHandler {
                     for i in &self.config.clone().gestures {
                         if let Gesture::Swipe(j) = i {
                             if j.fingers == s.fingers
-                                && (j.direction == s.direction || j.direction == Direction::Any)
+                                && (j.direction == s.direction || j.direction == SwipeDir::Any)
                             {
                                 exec_command_from_string(
                                     &j.start.clone().unwrap_or_default(),
+                                    0.0,
                                     0.0,
                                     0.0,
                                     0.0,
@@ -378,19 +388,20 @@ impl EventHandler {
             }
             GestureSwipeEvent::Update(e) => {
                 let (x, y) = (e.dx(), e.dy());
-                let swipe_dir = Direction::dir(x, y);
+                let swipe_dir = SwipeDir::dir(x, y);
 
                 if let Gesture::Swipe(s) = &self.event {
                     log::debug!("{:?}  {:?}", &swipe_dir, &s.fingers);
                     for i in &self.config.clone().gestures {
                         if let Gesture::Swipe(j) = i {
                             if j.fingers == s.fingers
-                                && (j.direction == swipe_dir || j.direction == Direction::Any)
+                                && (j.direction == swipe_dir || j.direction == SwipeDir::Any)
                             {
                                 exec_command_from_string(
                                     &j.update.clone().unwrap_or_default(),
                                     x,
                                     y,
+                                    0.0,
                                     0.0,
                                 )?;
                             }
@@ -411,10 +422,11 @@ impl EventHandler {
                         for i in &self.config.clone().gestures {
                             if let Gesture::Swipe(j) = i {
                                 if j.fingers == s.fingers
-                                    && (j.direction == s.direction || j.direction == Direction::Any)
+                                    && (j.direction == s.direction || j.direction == SwipeDir::Any)
                                 {
                                     exec_command_from_string(
                                         &j.end.clone().unwrap_or_default(),
+                                        0.0,
                                         0.0,
                                         0.0,
                                         0.0,
