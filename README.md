@@ -11,7 +11,7 @@ as well.
   - [x] Swipe events; vertical, horizontal and diagonal
   - [x] Pinch events
   - [x] Hold events
-  - [ ] Rotate events
+  - [x] Rotate events
   - [x] Continuous and one-shot events
 - [x] Config file
 
