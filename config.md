@@ -13,14 +13,14 @@ The configuration format (since 0.5.0) uses [`kdl`](https://kdl.dev).
 // start, update, and end are all optional. They are executed with `sh -c` and are executed when
 // the gesture is started, recieves an update event and ends.
 //
-// In all of the fields which execute a shell command, `delta_x`, `delta_y` and `scale` are replaced
-// with the delta in the x and y directions and the scale (movement farther apart or closer together)
+// In all of the fields which execute a shell command, `delta_x`, `delta_y`, `delta_angle`, and `scale` are replaced
+// with the delta in the x and y directions, the angle delta and the scale (movement farther apart or closer together)
 // of the gesture. If they are used for an action in which they do not make sense (e.g. using 
 // `scale` in the swipe gesture, 0.0 is used as the value.)
 //
 swipe direction="s" fingers=4 start="<command>" update="<command>" end="<command>"
 
-// pinch direction can be "in" or "out". Other fields are the same as for
+// pinch direction can be "in", "out", "clockwise" or "counter-clockwise". Other fields are the same as for
 // the swipe gesture
 //
 pinch direction="out" fingers=3 start="<command>" update="<command>" end="<command>"
