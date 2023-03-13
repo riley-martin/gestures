@@ -109,6 +109,7 @@ impl PinchDir {
     pub fn dir(scale: f64, delta_angle: f64) -> Self {
         // If the scale is low enough, see if there is any rotation
         // These values seem to work fairly well overall
+        // But maybe could be improved by checking here for large rotation
         if (scale > 0.92) && (scale < 1.08) {
             if delta_angle > 0.0 {
                 Self::Clockwise
@@ -125,7 +126,6 @@ impl PinchDir {
         }
     }
 }
-
 
 #[derive(Decode, Debug, Clone, PartialEq)]
 pub enum Gesture {
@@ -203,12 +203,13 @@ impl EventHandler {
 
     fn has_gesture_device(&mut self, input: &mut Libinput) -> bool {
         let mut found = false;
+        log::debug!("Looking for gesture device");
         input.dispatch().unwrap();
         for event in input.clone() {
             if let Event::Device(e) = event {
-                log::debug!("{:?}", &e);
+                log::debug!("Device: {:?}", &e);
                 found = e.device().has_capability(DeviceCapability::Gesture);
-                log::debug!("{:?}", found);
+                log::debug!("Supports gestures: {:?}", found);
                 if found {
                     return found;
                 }
@@ -254,7 +255,7 @@ impl EventHandler {
             }
             GestureHoldEvent::End(_e) => {
                 if let Gesture::Hold(s) = &self.event {
-                    log::debug!("Hold  {:?}", &s.fingers);
+                    log::debug!("Hold: {:?}", &s.fingers);
                     for i in &self.config.clone().gestures {
                         if let Gesture::Hold(j) = i {
                             if j.fingers == s.fingers {
@@ -291,7 +292,6 @@ impl EventHandler {
                             if (j.direction == s.direction || j.direction == PinchDir::Any)
                                 && j.fingers == s.fingers
                             {
-                                log::debug!("pinch gesture");
                                 exec_command_from_string(
                                     &j.start.clone().unwrap_or_default(),
                                     0.0,
@@ -309,7 +309,13 @@ impl EventHandler {
                 let delta_angle = e.angle_delta();
                 if let Gesture::Pinch(s) = &self.event {
                     let dir = PinchDir::dir(scale, delta_angle);
-                    log::debug!("{:?}  {:?}  {:?}", &scale, &dir, &s.fingers);
+                    log::debug!(
+                        "Pinch: scale={:?} angle={:?} direction={:?} fingers={:?}",
+                        &scale,
+                        &delta_angle,
+                        &dir,
+                        &s.fingers
+                    );
                     for i in &self.config.clone().gestures {
                         if let Gesture::Pinch(j) = i {
                             if (j.direction == dir || j.direction == PinchDir::Any)
@@ -391,7 +397,7 @@ impl EventHandler {
                 let swipe_dir = SwipeDir::dir(x, y);
 
                 if let Gesture::Swipe(s) = &self.event {
-                    log::debug!("{:?}  {:?}", &swipe_dir, &s.fingers);
+                    log::debug!("Swipe: direction={:?} fingers={:?}", &swipe_dir, &s.fingers);
                     for i in &self.config.clone().gestures {
                         if let Gesture::Swipe(j) = i {
                             if j.fingers == s.fingers
