@@ -1,13 +1,15 @@
 mod config;
 mod gestures;
+mod ipc;
+mod ipc_client;
 mod utils;
 
 #[cfg(test)]
 mod tests;
 
-use std::{path::PathBuf, rc::Rc};
+use std::{path::PathBuf, rc::Rc, thread};
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use env_logger::Builder;
 use log::LevelFilter;
 use miette::Result;
@@ -44,10 +46,24 @@ fn main() -> Result<()> {
         })
     };
     log::debug!("{:#?}", &c);
-    let mut eh = gestures::EventHandler::new(Rc::new(c));
+
+    match app.command {
+        Commands::Reload => {}
+        Commands::Start => run_eh(Rc::new(c))?,
+    }
+
+    Ok(())
+}
+
+fn run_eh(config: Rc<Config>) -> Result<()> {
+    let ipc_listener = thread::spawn(|| {
+        ipc::create_socket();
+    });
+    let mut eh = gestures::EventHandler::new(config);
     let mut interface = input::Libinput::new_with_udev(gestures::Interface);
     eh.init(&mut interface)?;
     eh.main_loop(&mut interface);
+    ipc_listener.join().unwrap();
     Ok(())
 }
 
@@ -63,4 +79,14 @@ struct App {
     /// Path to config file
     #[arg(short, long, value_name = "FILE")]
     conf: Option<PathBuf>,
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Reload the configuration
+    Reload,
+    /// Start the program
+    Start,
 }

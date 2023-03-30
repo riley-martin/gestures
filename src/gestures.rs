@@ -117,12 +117,10 @@ impl PinchDir {
                 Self::CounterClockwise
             }
         // Otherwise we have a normal pinch
+        } else if scale > 1.0 {
+            Self::Out
         } else {
-            if scale > 1.0 {
-                Self::Out
-            } else {
-                Self::In
-            }
+            Self::In
         }
     }
 }
