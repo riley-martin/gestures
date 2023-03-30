@@ -56,14 +56,18 @@ fn main() -> Result<()> {
 }
 
 fn run_eh(config: Arc<Config>) -> Result<()> {
-    let ipc_listener = thread::spawn(|| {
-        ipc::create_socket();
+    let eh_thread = thread::spawn(|| -> Result<()> {
+        log::debug!("Starting event handler in new thread");
+        let mut eh = gestures::EventHandler::new(config);
+        let mut interface = input::Libinput::new_with_udev(gestures::Interface);
+        eh.init(&mut interface)?;
+        eh.main_loop(&mut interface);
+        Ok(())
     });
-    let mut eh = gestures::EventHandler::new(config);
-    let mut interface = input::Libinput::new_with_udev(gestures::Interface);
-    eh.init(&mut interface)?;
-    eh.main_loop(&mut interface);
-    ipc_listener.join().unwrap();
+
+    ipc::create_socket();
+
+    eh_thread.join().unwrap()?;
     Ok(())
 }
 
