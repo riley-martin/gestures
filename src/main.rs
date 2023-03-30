@@ -7,7 +7,7 @@ mod utils;
 #[cfg(test)]
 mod tests;
 
-use std::{path::PathBuf, rc::Rc, thread};
+use std::{path::PathBuf, sync::Arc, thread};
 
 use clap::{Parser, Subcommand};
 use env_logger::Builder;
@@ -49,13 +49,13 @@ fn main() -> Result<()> {
 
     match app.command {
         Commands::Reload => {}
-        Commands::Start => run_eh(Rc::new(c))?,
+        Commands::Start => run_eh(Arc::new(c))?,
     }
 
     Ok(())
 }
 
-fn run_eh(config: Rc<Config>) -> Result<()> {
+fn run_eh(config: Arc<Config>) -> Result<()> {
     let ipc_listener = thread::spawn(|| {
         ipc::create_socket();
     });

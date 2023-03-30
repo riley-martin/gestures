@@ -2,7 +2,7 @@ use std::{
     fs::{File, OpenOptions},
     os::unix::prelude::{AsRawFd, FromRawFd, IntoRawFd, OpenOptionsExt, RawFd},
     path::Path,
-    rc::Rc,
+    sync::Arc,
 };
 
 use input::{
@@ -172,12 +172,12 @@ pub struct Hold {
 
 #[derive(Debug)]
 pub struct EventHandler {
-    config: Rc<Config>,
+    config: Arc<Config>,
     event: Gesture,
 }
 
 impl EventHandler {
-    pub fn new(config: Rc<Config>) -> Self {
+    pub fn new(config: Arc<Config>) -> Self {
         Self {
             config,
             event: Gesture::None,
