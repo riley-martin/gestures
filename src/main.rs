@@ -7,7 +7,11 @@ mod utils;
 #[cfg(test)]
 mod tests;
 
-use std::{path::PathBuf, sync::Arc, thread};
+use std::{
+    path::PathBuf,
+    sync::{Arc, RwLock},
+    thread,
+};
 
 use clap::{Parser, Subcommand};
 use env_logger::Builder;
@@ -49,13 +53,13 @@ fn main() -> Result<()> {
 
     match app.command {
         Commands::Reload => {}
-        Commands::Start => run_eh(Arc::new(c))?,
+        Commands::Start => run_eh(Arc::new(RwLock::new(c)))?,
     }
 
     Ok(())
 }
 
-fn run_eh(config: Arc<Config>) -> Result<()> {
+fn run_eh(config: Arc<RwLock<Config>>) -> Result<()> {
     let eh_thread = thread::spawn(|| -> Result<()> {
         log::debug!("Starting event handler in new thread");
         let mut eh = gestures::EventHandler::new(config);
