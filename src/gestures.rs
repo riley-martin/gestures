@@ -373,7 +373,7 @@ impl EventHandler {
                     end: None,
                 });
                 if let Gesture::Swipe(s) = &self.event {
-                    for i in &self.config.clone().write().unwrap().gestures {
+                    for i in &self.config.clone().read().unwrap().gestures {
                         if let Gesture::Swipe(j) = i {
                             if j.fingers == s.fingers
                                 && (j.direction == s.direction || j.direction == SwipeDir::Any)
@@ -396,7 +396,7 @@ impl EventHandler {
 
                 if let Gesture::Swipe(s) = &self.event {
                     log::debug!("Swipe: direction={:?} fingers={:?}", &swipe_dir, &s.fingers);
-                    for i in &self.config.clone().write().unwrap().gestures {
+                    for i in &self.config.clone().read().unwrap().gestures {
                         if let Gesture::Swipe(j) = i {
                             if j.fingers == s.fingers
                                 && (j.direction == swipe_dir || j.direction == SwipeDir::Any)
@@ -423,7 +423,7 @@ impl EventHandler {
             GestureSwipeEvent::End(e) => {
                 if let Gesture::Swipe(s) = &self.event {
                     if !e.cancelled() {
-                        for i in &self.config.clone().write().unwrap().gestures {
+                        for i in &self.config.clone().read().unwrap().gestures {
                             if let Gesture::Swipe(j) = i {
                                 if j.fingers == s.fingers
                                     && (j.direction == s.direction || j.direction == SwipeDir::Any)

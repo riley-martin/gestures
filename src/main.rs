@@ -10,7 +10,7 @@ mod tests;
 use std::{
     path::PathBuf,
     sync::{Arc, RwLock},
-    thread,
+    thread::{self, JoinHandle},
 };
 
 use clap::{Parser, Subcommand};
@@ -52,7 +52,9 @@ fn main() -> Result<()> {
     log::debug!("{:#?}", &c);
 
     match app.command {
-        Commands::Reload => {}
+        c @ Commands::Reload => {
+            ipc_client::handle_command(c);
+        }
         Commands::Start => run_eh(Arc::new(RwLock::new(c)))?,
     }
 
@@ -60,16 +62,21 @@ fn main() -> Result<()> {
 }
 
 fn run_eh(config: Arc<RwLock<Config>>) -> Result<()> {
-    let eh_thread = thread::spawn(|| -> Result<()> {
-        log::debug!("Starting event handler in new thread");
-        let mut eh = gestures::EventHandler::new(config);
-        let mut interface = input::Libinput::new_with_udev(gestures::Interface);
-        eh.init(&mut interface)?;
-        eh.main_loop(&mut interface);
-        Ok(())
-    });
+    let eh_thread: JoinHandle<Result<()>>;
 
-    ipc::create_socket();
+    {
+        let config = config.clone();
+        eh_thread = thread::spawn(|| -> Result<()> {
+            log::debug!("Starting event handler in new thread");
+            let mut eh = gestures::EventHandler::new(config);
+            let mut interface = input::Libinput::new_with_udev(gestures::Interface);
+            eh.init(&mut interface)?;
+            eh.main_loop(&mut interface);
+            Ok(())
+        });
+    }
+
+    ipc::create_socket(config);
 
     eh_thread.join().unwrap()?;
     Ok(())
@@ -92,7 +99,7 @@ struct App {
 }
 
 #[derive(Subcommand, Debug)]
-enum Commands {
+pub enum Commands {
     /// Reload the configuration
     Reload,
     /// Start the program
