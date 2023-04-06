@@ -18,7 +18,10 @@
   outputs = { self, nixpkgs, utils, rust-overlay, crate2nix, ... }:
   let 
     name = "gestures";
-  in utils.lib.eachDefaultSystem
+  in utils.lib.eachSystem
+    [
+      utils.lib.system.x86_64-linux
+    ]
     (system:
       let
         pkgs = import nixpkgs {
