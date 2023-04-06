@@ -2,7 +2,7 @@ use std::{
     fs::{File, OpenOptions},
     os::unix::prelude::{AsRawFd, FromRawFd, IntoRawFd, OpenOptionsExt, RawFd},
     path::Path,
-    rc::Rc,
+    sync::{Arc, RwLock},
 };
 
 use input::{
@@ -117,12 +117,10 @@ impl PinchDir {
                 Self::CounterClockwise
             }
         // Otherwise we have a normal pinch
+        } else if scale > 1.0 {
+            Self::Out
         } else {
-            if scale > 1.0 {
-                Self::Out
-            } else {
-                Self::In
-            }
+            Self::In
         }
     }
 }
@@ -174,12 +172,12 @@ pub struct Hold {
 
 #[derive(Debug)]
 pub struct EventHandler {
-    config: Rc<Config>,
+    config: Arc<RwLock<Config>>,
     event: Gesture,
 }
 
 impl EventHandler {
-    pub fn new(config: Rc<Config>) -> Self {
+    pub fn new(config: Arc<RwLock<Config>>) -> Self {
         Self {
             config,
             event: Gesture::None,
@@ -256,7 +254,7 @@ impl EventHandler {
             GestureHoldEvent::End(_e) => {
                 if let Gesture::Hold(s) = &self.event {
                     log::debug!("Hold: {:?}", &s.fingers);
-                    for i in &self.config.clone().gestures {
+                    for i in &self.config.clone().read().unwrap().gestures {
                         if let Gesture::Hold(j) = i {
                             if j.fingers == s.fingers {
                                 exec_command_from_string(
@@ -287,7 +285,7 @@ impl EventHandler {
                     end: None,
                 });
                 if let Gesture::Pinch(s) = &self.event {
-                    for i in &self.config.clone().gestures {
+                    for i in &self.config.clone().read().unwrap().gestures {
                         if let Gesture::Pinch(j) = i {
                             if (j.direction == s.direction || j.direction == PinchDir::Any)
                                 && j.fingers == s.fingers
@@ -316,7 +314,7 @@ impl EventHandler {
                         &dir,
                         &s.fingers
                     );
-                    for i in &self.config.clone().gestures {
+                    for i in &self.config.clone().read().unwrap().gestures {
                         if let Gesture::Pinch(j) = i {
                             if (j.direction == dir || j.direction == PinchDir::Any)
                                 && j.fingers == s.fingers
@@ -342,7 +340,7 @@ impl EventHandler {
             }
             GesturePinchEvent::End(_e) => {
                 if let Gesture::Pinch(s) = &self.event {
-                    for i in &self.config.clone().gestures {
+                    for i in &self.config.clone().read().unwrap().gestures {
                         if let Gesture::Pinch(j) = i {
                             if (j.direction == s.direction || j.direction == PinchDir::Any)
                                 && j.fingers == s.fingers
@@ -375,7 +373,7 @@ impl EventHandler {
                     end: None,
                 });
                 if let Gesture::Swipe(s) = &self.event {
-                    for i in &self.config.clone().gestures {
+                    for i in &self.config.clone().read().unwrap().gestures {
                         if let Gesture::Swipe(j) = i {
                             if j.fingers == s.fingers
                                 && (j.direction == s.direction || j.direction == SwipeDir::Any)
@@ -398,7 +396,7 @@ impl EventHandler {
 
                 if let Gesture::Swipe(s) = &self.event {
                     log::debug!("Swipe: direction={:?} fingers={:?}", &swipe_dir, &s.fingers);
-                    for i in &self.config.clone().gestures {
+                    for i in &self.config.clone().read().unwrap().gestures {
                         if let Gesture::Swipe(j) = i {
                             if j.fingers == s.fingers
                                 && (j.direction == swipe_dir || j.direction == SwipeDir::Any)
@@ -425,7 +423,7 @@ impl EventHandler {
             GestureSwipeEvent::End(e) => {
                 if let Gesture::Swipe(s) = &self.event {
                     if !e.cancelled() {
-                        for i in &self.config.clone().gestures {
+                        for i in &self.config.clone().read().unwrap().gestures {
                             if let Gesture::Swipe(j) = i {
                                 if j.fingers == s.fingers
                                     && (j.direction == s.direction || j.direction == SwipeDir::Any)
