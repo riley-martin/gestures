@@ -7,22 +7,66 @@
       url = "github:edolstra/flake-compat";
       flake = false;
     };
-    nci.url = "github:yusdacra/nix-cargo-integration";
-    nci.inputs.nixpkgs.follows = "nixpkgs";
+    utils.url = "github:numtide/flake-utils";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    crate2nix = {
+      url = "github:kolloch/crate2nix";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, nci, ... }:
-    nci.lib.makeOutputs {
-      # Documentation and examples:
-      # https://github.com/yusdacra/rust-nix-templater/blob/master/template/flake.nix
-      root = ./.;
-      overrides = {
-        shell = common: prev: {
-          packages = prev.packages ++ [
-            common.pkgs.rust-analyzer
-            common.pkgs.cargo-watch
+  outputs = { self, nixpkgs, utils, rust-overlay, crate2nix, ... }:
+  let 
+    name = "gestures";
+  in utils.lib.eachDefaultSystem
+    (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [
+            rust-overlay.overlay
+            (self: super: {
+              rustc = self.rust-bin.stable.latest.default;
+              cargo = self.rust-bin.stable.latest.default;
+            })
           ];
         };
-      };
-    };
+        inherit (import "${crate2nix}/tools.nix" { inherit pkgs; })
+          generatedCargoNix;   
+
+        project = pkgs.callPackage
+          (generatedCargoNix {
+            inherit name;
+            src = ./.;
+          })
+          {
+            defaultCrateOverrides = pkgs.defaultCrateOverrides // {
+              ${name} = oldAttrs: {
+                inherit buildInputs nativeBuildInputs;
+              } // buildEnvVars;
+            };
+          };
+
+        buildInputs = with pkgs; [ libinput udev ];
+        nativeBuildInputs = with pkgs; [ rustc cargo pkgconfig nixpkgs-fmt ];
+        buildEnvVars = {};
+      in
+      rec {
+        packages.${name} = project.rootCrate.build;
+
+        defaultPackage = packages.${name};
+
+        apps.${name} = utils.lib.mkApp {
+          inherit name;
+          drv = packages.${name};
+        };
+        defaultApp = apps.${name};
+
+        devShell = pkgs.mkShell
+          {
+            inherit buildInputs nativeBuildInputs;
+            RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+          } // buildEnvVars;
+      }
+    );
 }
