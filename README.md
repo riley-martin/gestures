@@ -24,10 +24,18 @@ Linux. The testing workflow runs on Ubuntu and I test it myself on ~~Artix Linux
 `libinput` touchpad driver rather than the older `synaptics` driver.  
 Note: If your DE/WM has its own touchpad gestures system, it may need to be disabled to
 prevent conflicts.
+### Nix
+#### Home-manager
+If you are using home-manager with flakes, simply add `gestures.url = "github:riley-martin/gestures";` to you flake inputs
+and add `inputs.gestures.packages.${system}.gestures` to your `home.packages`. You can also create a service in
+`systemd.user.services`.
+
 ### Dependencies
 You may need to install `libudev` and `libinput`, or their equivalant for your distro, and possibly the `dev` versions as well.
+
 ### With Cargo
 If you have cargo installed, simply use `cargo install gestures`
+
 ### Manual installation
 - Clone the repo
   - `git clone https://github.com/riley-martin/gestures && cd gestures`
@@ -36,13 +44,16 @@ If you have cargo installed, simply use `cargo install gestures`
   - `cargo build --release`
 
 - Copy `./target/release/gestures` to a convenient place and execute it
+
 ### Autostart
 #### Compositor/WM
 You can start `gestures` in your `.xinitrc` or other startup files (like sway config file, for example)
+
 #### Systemd
 Drop [examples/gestures.service](./examples/gestures.service) into `~/.config/systemd/user/gestures.service`
 and modify it for your system (mainly the "$HOME" environment variable and the `ExecStart` will need changed).
 To have it start automatically, run `systemctl --user enable --now gestures.service`.
+
 #### Other init systems
 I haven't used any other init systems, but the service is quite simple so it should be easy to modify
 for other systems.
