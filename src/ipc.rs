@@ -6,10 +6,33 @@ use std::thread;
 
 use crate::config::{self, Config};
 
+struct IpcListener(UnixListener);
+
+impl Drop for IpcListener {
+    fn drop(&mut self) {
+        let addr = self.0.local_addr().expect("Couldn't get socket address");
+        let path = addr.as_pathname().expect("Socket address is not a path");
+        std::fs::remove_file(path).expect("Could not remove socket");
+    }
+}
+
 pub fn create_socket(config: Arc<RwLock<Config>>) {
     let socket_dir = env::var("XDG_RUNTIME_DIR").unwrap_or("/tmp".to_string());
+    // let listener = Arc::new(RwLock::new(IpcListener(
+    // UnixListener::bind(format!("{socket_dir}/gestures.sock")).unwrap(),
+    // )));
     let listener = UnixListener::bind(format!("{socket_dir}/gestures.sock")).unwrap();
 
+    {
+        // let listener = listener.clone();
+        ctrlc::set_handler(move || {
+            std::fs::remove_file("/run/user/1000/gestures.sock").unwrap();
+            std::process::exit(1);
+        })
+        .unwrap();
+    }
+
+    // for stream in listener.read().unwrap().0.incoming() {
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
@@ -22,7 +45,6 @@ pub fn create_socket(config: Arc<RwLock<Config>>) {
             }
         }
     }
-    std::fs::remove_file(format!("{socket_dir}/gestures.sock")).unwrap();
 }
 
 fn handle_connection(stream: UnixStream, config: Arc<RwLock<Config>>) {
