@@ -25,9 +25,8 @@ Linux. The testing workflow runs on Ubuntu and I test it myself on ~~Artix Linux
 Note: If your DE/WM has its own touchpad gestures system, it may need to be disabled to
 prevent conflicts.
 ### Nix
-#### Home-manager
-If you are using home-manager with flakes, simply add `gestures.url = "github:riley-martin/gestures";` to you flake inputs
-and add `inputs.gestures.packages.${system}.gestures` to your `home.packages`. You can also create a service in
+If you are using flakes, simply add `gestures.url = "github:riley-martin/gestures";` to your flake inputs
+and add `inputs.gestures.packages.${system}.gestures` to your `home.packages` or `environment.systemPackages`. You can also create a service in
 `systemd.user.services`.
 
 ### Dependencies
