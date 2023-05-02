@@ -1,4 +1,5 @@
 mod config;
+mod event_handler;
 mod gestures;
 mod ipc;
 mod ipc_client;
@@ -68,8 +69,8 @@ fn run_eh(config: Arc<RwLock<Config>>) -> Result<()> {
         let config = config.clone();
         eh_thread = thread::spawn(|| -> Result<()> {
             log::debug!("Starting event handler in new thread");
-            let mut eh = gestures::EventHandler::new(config);
-            let mut interface = input::Libinput::new_with_udev(gestures::Interface);
+            let mut eh = event_handler::EventHandler::new(config);
+            let mut interface = input::Libinput::new_with_udev(event_handler::Interface);
             eh.init(&mut interface)?;
             eh.main_loop(&mut interface);
             Ok(())

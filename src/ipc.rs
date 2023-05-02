@@ -4,7 +4,7 @@ use std::os::unix::net::{UnixListener, UnixStream};
 use std::sync::{Arc, RwLock};
 use std::thread;
 
-use crate::config::{self, Config};
+use crate::config::Config;
 
 struct IpcListener(UnixListener);
 
