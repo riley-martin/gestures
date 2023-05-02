@@ -1,4 +1,4 @@
-use crate::gestures::SwipeDir;
+use crate::gestures::swipe::SwipeDir;
 
 use super::*;
 
