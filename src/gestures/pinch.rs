@@ -26,10 +26,8 @@ pub enum PinchDir {
 
 impl PinchDir {
     pub fn dir(scale: f64, delta_angle: f64) -> Self {
-        // If the scale is low enough, see if there is any rotation
-        // These values seem to work fairly well overall
-        // But maybe could be improved by checking here for large rotation
-        if (scale > 0.92) && (scale < 1.08) {
+        // We have some rotation and very little scale
+        if scale > 0.95 && scale < 1.05 && delta_angle.abs() > 0.03 {
             if delta_angle > 0.0 {
                 Self::Clockwise
             } else {
