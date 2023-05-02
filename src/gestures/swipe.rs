@@ -33,54 +33,45 @@ pub enum SwipeDir {
 }
 
 impl SwipeDir {
-    // This code is sort of a mess
-    pub fn dir(x: f64, y: f64) -> SwipeDir {
+    pub fn dir(x: f64, y: f64) -> Self {
         if x.abs() == 0.0 && y.abs() == 0.0 {
             return SwipeDir::Any;
-        }
+        };
+
         let oblique_ratio = 0.414;
-        if x.abs() > y.abs() {
-            let sd = if x < 0.0 { SwipeDir::W } else { SwipeDir::E };
-            if y.abs() / x.abs() > oblique_ratio {
-                if sd == SwipeDir::W {
-                    if y < 0.0 {
-                        SwipeDir::NW
-                    } else {
-                        SwipeDir::SW
-                    }
-                } else if sd == SwipeDir::E {
-                    if y < 0.0 {
-                        SwipeDir::NE
-                    } else {
-                        SwipeDir::SE
-                    }
-                } else {
-                    SwipeDir::Any
-                }
+
+        let primary_direction = if y.abs() > x.abs() {
+            if y < 0.0 {
+                Self::N
             } else {
-                sd
+                Self::S
+            }
+        } else if x < 0.0 {
+            Self::W
+        } else {
+            Self::E
+        };
+
+        let (ratio, secondary_direction) = match primary_direction {
+            Self::N | Self::S => (x.abs() / y.abs(), if x < 0.0 { Self::W } else { Self::E }),
+            Self::E | Self::W => (y.abs() / x.abs(), if y < 0.0 { Self::N } else { Self::S }),
+            _ => (0.0, Self::Any),
+        };
+
+        if ratio > oblique_ratio {
+            match (primary_direction, secondary_direction) {
+                (Self::N, Self::E) => Self::NE,
+                (Self::N, Self::W) => Self::NW,
+                (Self::S, Self::E) => Self::SE,
+                (Self::S, Self::W) => Self::SW,
+                (Self::E, Self::N) => Self::NE,
+                (Self::E, Self::S) => Self::SE,
+                (Self::W, Self::N) => Self::NW,
+                (Self::W, Self::S) => Self::SW,
+                _ => Self::Any,
             }
         } else {
-            let sd = if y < 0.0 { SwipeDir::N } else { SwipeDir::S };
-            if x.abs() / y.abs() > oblique_ratio {
-                if sd == SwipeDir::N {
-                    if x < 0.0 {
-                        SwipeDir::NW
-                    } else {
-                        SwipeDir::NE
-                    }
-                } else if sd == SwipeDir::S {
-                    if x < 0.0 {
-                        SwipeDir::SW
-                    } else {
-                        SwipeDir::SE
-                    }
-                } else {
-                    SwipeDir::Any
-                }
-            } else {
-                sd
-            }
+            primary_direction
         }
     }
 }

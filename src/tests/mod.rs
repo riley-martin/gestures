@@ -25,8 +25,28 @@ fn test_direction_n() {
 }
 
 #[test]
+fn test_direction_ne() {
+    assert_eq!(SwipeDir::NE, SwipeDir::dir(1.0, -1.0));
+}
+
+#[test]
+fn test_direction_nw() {
+    assert_eq!(SwipeDir::NW, SwipeDir::dir(-1.0, -1.0));
+}
+
+#[test]
 fn test_direction_s() {
     assert_eq!(SwipeDir::S, SwipeDir::dir(0.0, 1.0));
+}
+
+#[test]
+fn test_direction_se() {
+    assert_eq!(SwipeDir::SE, SwipeDir::dir(1.0, 1.0));
+}
+
+#[test]
+fn test_direction_sw() {
+    assert_eq!(SwipeDir::SW, SwipeDir::dir(-1.0, 1.0))
 }
 
 #[test]
