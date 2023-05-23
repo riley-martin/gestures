@@ -51,7 +51,7 @@
           };
 
         buildInputs = with pkgs; [ libinput udev ];
-        nativeBuildInputs = with pkgs; [ rustc cargo pkgconfig nixpkgs-fmt ];
+        nativeBuildInputs = with pkgs; [ cargo-udeps rustc cargo pkgconfig nixpkgs-fmt ];
         buildEnvVars = {};
       in
       rec {

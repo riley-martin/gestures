@@ -1,6 +1,9 @@
 use std::{
-    fs::{File, OpenOptions},
-    os::unix::prelude::{AsRawFd, FromRawFd, IntoRawFd, OpenOptionsExt, RawFd},
+    fs::OpenOptions,
+    os::{
+        fd::OwnedFd,
+        unix::prelude::{AsRawFd, IntoRawFd, OpenOptionsExt},
+    },
     path::Path,
     sync::{Arc, RwLock},
 };
@@ -15,9 +18,11 @@ use input::{
     },
     DeviceCapability, Libinput, LibinputInterface,
 };
-use libc::{O_RDWR, O_WRONLY};
 use miette::{miette, Result};
-use nix::poll::{poll, PollFd, PollFlags};
+use nix::{
+    fcntl::OFlag,
+    poll::{poll, PollFd, PollFlags},
+};
 // use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -304,18 +309,16 @@ impl EventHandler {
 pub struct Interface;
 
 impl LibinputInterface for Interface {
-    fn open_restricted(&mut self, path: &Path, flags: i32) -> Result<RawFd, i32> {
+    fn open_restricted(&mut self, path: &Path, flags: i32) -> Result<OwnedFd, i32> {
         OpenOptions::new()
             .custom_flags(flags)
-            .read((false) | (flags & O_RDWR != 0))
-            .write((flags & O_WRONLY != 0) | (flags & O_RDWR != 0))
+            .read((false) | (flags & OFlag::O_RDWR.bits() != 0))
+            .write((flags & OFlag::O_WRONLY.bits() != 0) | (flags & OFlag::O_RDWR.bits() != 0))
             .open(path)
-            .map(|file| file.into_raw_fd())
+            .map(|file| file.try_into().unwrap())
             .map_err(|err| err.raw_os_error().unwrap())
     }
-    fn close_restricted(&mut self, fd: RawFd) {
-        unsafe {
-            File::from_raw_fd(fd);
-        }
+    fn close_restricted(&mut self, fd: OwnedFd) {
+        nix::unistd::close(fd.into_raw_fd()).unwrap();
     }
 }
