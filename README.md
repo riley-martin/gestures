@@ -1,4 +1,6 @@
 # Gestures
+[![crates.io](https://img.shields.io/crates/v/gestures.svg)](https://crates.io/crates/gestures)
+[![dependency status](https://deps.rs/repo/github/riley-martin/gestures/status.svg)](https://deps.rs/repo/github/riley-martin/gestures)
 ## About
 This is a program for intercepting touchpad gestures and executing commands based on them.
 Unlike some alternatives, it directly uses the libinput api rather than parsing the output
