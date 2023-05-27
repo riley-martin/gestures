@@ -58,16 +58,13 @@ impl SwipeDir {
             _ => (0.0, Self::Any),
         };
 
+        // If we're going more diagonal than vertical or horizontal:
         if ratio > oblique_ratio {
             match (primary_direction, secondary_direction) {
-                (Self::N, Self::E) => Self::NE,
-                (Self::N, Self::W) => Self::NW,
-                (Self::S, Self::E) => Self::SE,
-                (Self::S, Self::W) => Self::SW,
-                (Self::E, Self::N) => Self::NE,
-                (Self::E, Self::S) => Self::SE,
-                (Self::W, Self::N) => Self::NW,
-                (Self::W, Self::S) => Self::SW,
+                (Self::N, Self::E) | (Self::E, Self::N) => Self::NE,
+                (Self::N, Self::W) | (Self::W, Self::N) => Self::NW,
+                (Self::S, Self::E) | (Self::E, Self::S) => Self::SE,
+                (Self::S, Self::W) | (Self::W, Self::S) => Self::SW,
                 _ => Self::Any,
             }
         } else {
