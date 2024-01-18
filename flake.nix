@@ -31,6 +31,7 @@
             (self: super: {
               rustc = self.rust-bin.stable.latest.default;
               cargo = self.rust-bin.stable.latest.default;
+              # rust-analyzer = self.rust-bin.stable.latest.default;
             })
           ];
         };
@@ -51,7 +52,7 @@
           };
 
         buildInputs = with pkgs; [ libinput udev ];
-        nativeBuildInputs = with pkgs; [ cargo-udeps rustc cargo pkgconfig nixpkgs-fmt ];
+        nativeBuildInputs = with pkgs; [ cargo-udeps rustc cargo rust-analyzer pkgconfig nixpkgs-fmt ];
         buildEnvVars = {};
       in
       rec {
