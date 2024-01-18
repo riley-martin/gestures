@@ -27,12 +27,7 @@
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
-            rust-overlay.overlay
-            (self: super: {
-              rustc = self.rust-bin.stable.latest.default;
-              cargo = self.rust-bin.stable.latest.default;
-              # rust-analyzer = self.rust-bin.stable.latest.default;
-            })
+            (import rust-overlay)
           ];
         };
         inherit (import "${crate2nix}/tools.nix" { inherit pkgs; })
@@ -52,7 +47,9 @@
           };
 
         buildInputs = with pkgs; [ libinput udev ];
-        nativeBuildInputs = with pkgs; [ cargo-udeps rustc cargo rust-analyzer pkgconfig nixpkgs-fmt ];
+        nativeBuildInputs = with pkgs; [ cargo-udeps rust-analyzer pkg-config nixpkgs-fmt
+          rust-bin.stable.latest.default
+        ];
         buildEnvVars = {};
       in
       rec {
