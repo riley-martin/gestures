@@ -81,8 +81,7 @@ impl EventHandler {
     pub fn main_loop(&mut self, input: &mut Libinput) {
         let mut cloned = input.clone();
         let fd = input.as_fd();
-        let fds = PollFd::new(&fd, PollFlags::POLLIN);
-        while poll(&mut [fds], -1).is_ok() {
+        while poll(&mut [PollFd::new(fd, PollFlags::POLLIN)], 1_u8).is_ok() {
             self.handle_event(&mut cloned)
                 .expect("An Error occurred while handling an event");
         }
