@@ -9,11 +9,11 @@ keywords = ["touchpad", "gestures", "libinput", "multitouch", "linux"]
 
 [dependencies]
 clap = { version = "4.0.26", features = ["derive"] }
-input = "0.8"
-nix = {version = "0.27.1", features = ["poll", "fs"]}
+input = "0.9.0"
+nix = { version = "0.30.1", features = ["poll", "fs"] }
 regex = "1.7"
 log = "0.4.17"
-env_logger = "0.10.0"
-miette = { version = "5.5.0", features = ["fancy"] }
+env_logger = "0.11.0"
+miette = { version = "7.6.0", features = ["fancy"] }
 knuffel = "3.2"
 ctrlc = { version = "3.2.5", features = ["termination"] }
